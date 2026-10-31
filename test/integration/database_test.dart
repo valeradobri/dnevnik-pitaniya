@@ -1,0 +1,153 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:drift/native.dart';
+import 'package:dnevnik/core/database/app_database.dart';
+
+void main() {
+  late AppDatabase db;
+
+  setUp(() {
+    // Создаем свежую in-memory базу данных для каждого теста
+    db = AppDatabase.forTesting(NativeDatabase.memory());
+  });
+
+  tearDown(() async {
+    await db.close();
+  });
+
+  group('AppDatabase & DAOs — Integration Tests', () {
+    test('База данных успешно сидируется начальными продуктами и достижениями', () async {
+      final foods = await db.foodDao.getAllFoods();
+      expect(foods.length, greaterThanOrEqualTo(50));
+
+      final achievements = await db.select(db.achievements).get();
+      expect(achievements.length, greaterThanOrEqualTo(5));
+    });
+
+    test('FoodDao — поиск и фильтрация продуктов', () async {
+      final buckwheat = await db.foodDao.searchFoods('греч');
+      expect(buckwheat, isNotEmpty);
+      expect(buckwheat.first.name.toLowerCase(), contains('греч'));
+
+      final chicken = await db.foodDao.searchFoods('куриное', category: 'meat');
+      expect(chicken, isNotEmpty);
+      expect(chicken.first.category, equals('meat'));
+    });
+
+    test('FoodDao — добавление в избранное', () async {
+      final allFoods = await db.foodDao.getAllFoods();
+      final first = allFoods.first;
+
+      await db.foodDao.toggleFavorite(first.id, true);
+      final favorites = await db.foodDao.watchFavorites().first;
+      expect(favorites.any((f) => f.id == first.id), isTrue);
+
+      await db.foodDao.toggleFavorite(first.id, false);
+      final updatedFavorites = await db.foodDao.watchFavorites().first;
+      expect(updatedFavorites.any((f) => f.id == first.id), isFalse);
+    });
+
+    test('DiaryDao — добавление, получение и подсчет КБЖУ за день', () async {
+      final today = DateTime.now();
+
+      await db.diaryDao.insertEntry(
+        DiaryEntriesCompanion.insert(
+          mealType: 'breakfast',
+          foodProductId: 1,
+          customName: 'Овсяная каша',
+          grams: 200,
+          calculatedCalories: 176.0,
+          calculatedProtein: 6.0,
+          calculatedFat: 3.4,
+          calculatedCarbs: 30.0,
+          entryDate: today,
+        ),
+      );
+
+      await db.diaryDao.insertEntry(
+        DiaryEntriesCompanion.insert(
+          mealType: 'lunch',
+          foodProductId: 2,
+          customName: 'Куриное филе',
+          grams: 150,
+          calculatedCalories: 229.5,
+          calculatedProtein: 45.6,
+          calculatedFat: 5.25,
+          calculatedCarbs: 0.0,
+          entryDate: today,
+        ),
+      );
+
+      final entries = await db.diaryDao.getEntriesForDate(today);
+      expect(entries.length, equals(2));
+
+      final totals = await db.diaryDao.watchTotalsForDate(today).first;
+      expect(totals.calories, closeTo(405.5, 0.1));
+      expect(totals.protein, closeTo(51.6, 0.1));
+      expect(totals.fat, closeTo(8.65, 0.1));
+      expect(totals.carbs, closeTo(30.0, 0.1));
+
+      // Удаление записи
+      await db.diaryDao.deleteEntry(entries.first.id);
+      final remaining = await db.diaryDao.getEntriesForDate(today);
+      expect(remaining.length, equals(1));
+    });
+
+    test('UserDao — сохранение профиля и обновление веса', () async {
+      final profile = UserProfilesCompanion.insert(
+        name: 'Валерий',
+        birthDate: DateTime(1995, 5, 20),
+        gender: 'male',
+        heightCm: 180.0,
+        currentWeightKg: 82.5,
+        targetWeightKg: 75.0,
+        activityLevel: 'moderate',
+        goalType: 'lose_weight',
+        targetCalories: 2100,
+        targetProteinG: 160.0,
+        targetFatG: 70.0,
+        targetCarbsG: 210.0,
+        targetWaterMl: 2700,
+      );
+
+      final id = await db.userDao.saveProfile(profile);
+      expect(id, isPositive);
+
+      final loaded = await db.userDao.getProfile();
+      expect(loaded, isNotNull);
+      expect(loaded!.name, equals('Валерий'));
+      expect(loaded.currentWeightKg, equals(82.5));
+
+      // Обновление текущего веса
+      await db.userDao.updateWeight(81.8);
+      final updated = await db.userDao.getProfile();
+      expect(updated!.currentWeightKg, equals(81.8));
+    });
+
+    test('WaterDao — учет и сброс воды', () async {
+      final today = DateTime.now();
+
+      await db.waterDao.addWater(today, 250);
+      await db.waterDao.addWater(today, 500);
+
+      final total = await db.waterDao.watchTotalWaterMlForDate(today).first;
+      expect(total, equals(750));
+
+      await db.waterDao.resetWaterForDate(today);
+      final afterReset = await db.waterDao.watchTotalWaterMlForDate(today).first;
+      expect(afterReset, equals(0));
+    });
+
+    test('WeightDao — добавление взвешиваний и получение последнего', () async {
+      final yesterday = DateTime.now().subtract(const Duration(days: 1));
+      final today = DateTime.now();
+
+      await db.weightDao.addWeight(weightKg: 83.0, date: yesterday);
+      await db.weightDao.addWeight(weightKg: 82.3, date: today, notes: 'Утреннее натощак');
+
+      final latest = await db.weightDao.getLatestWeight();
+      expect(latest, isNotNull);
+      expect(latest!.weightKg, equals(82.3));
+      expect(latest.notes, equals('Утреннее натощак'));
+    });
+  });
+}
