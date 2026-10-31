@@ -203,9 +203,10 @@ lib/
 ## 6. ТЕКУЩИЙ СТАТУС РАБОЧЕГО ПРОСТРАНСТВА
 
 - **Каталог**: `D:\go-projects\Dnevnik`.
-- **Git**: Инициализирован чистый локальный репозиторий.
+- **Git**: Инициализирован локальный репозиторий, подключен удаленный репозиторий: [github.com/valeradobri/dnevnik-pitaniya](https://github.com/valeradobri/dnevnik-pitaniya).
+- **Синхронизация**: Ветка `main` успешно связана с `origin/main` через SSH (`git@github.com:valeradobri/dnevnik-pitaniya.git`).
 - **Среда хоста**: Windows 11 AMD64, 12 ядер, Node.js, Python, Dotnet, Go, Visual Studio C++ Build Tools.
-- **Flutter SDK**: В системной переменной `PATH` команда `flutter` отсутствует на данный момент. В Фазе 1 потребуется подключение/установка Flutter SDK (через официальный архив stable или Chocolatey), после чего проект будет сгенерирован и запущен.
+- **Flutter SDK**: В системной переменной `PATH` команда `flutter` отсутствует на данный момент. В Фазе 1 потребуется подключение/установка Flutter SDK (через официальный архив stable или указание существующего пути), после чего проект будет сгенерирован и запущен.
 
 ---
 
