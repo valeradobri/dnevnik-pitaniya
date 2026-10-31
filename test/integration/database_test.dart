@@ -149,5 +149,20 @@ void main() {
       expect(latest!.weightKg, equals(82.3));
       expect(latest.notes, equals('Утреннее натощак'));
     });
+
+    test('RecipeDao — сидирование и проверка правильной привязки сыра (не куриное филе)', () async {
+      await db.recipeDao.seedInitialRecipes();
+      final recipes = await db.recipeDao.watchAllRecipes().first;
+      expect(recipes.length, greaterThanOrEqualTo(5));
+
+      final pancake = recipes.firstWhere((r) => r.name.contains('Овсяноблин'));
+      final details = await db.recipeDao.getRecipeWithDetails(pancake.id);
+      expect(details, isNotNull);
+
+      final cheeseItem = details!.ingredients.firstWhere((i) => i.ingredient.notes == 'Сыр');
+      expect(cheeseItem.product.name.toLowerCase(), contains('сыр'));
+      expect(cheeseItem.product.name.toLowerCase(), isNot(contains('куриное')));
+    });
   });
 }
+

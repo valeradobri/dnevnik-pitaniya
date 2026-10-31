@@ -92,4 +92,14 @@ class DiaryDao {
       );
     });
   }
+
+  /// Реактивный стрим записей дневника в диапазоне дат (включительно)
+  Stream<List<DiaryEntry>> watchEntriesForRange(DateTime from, DateTime to) {
+    final start = DateTime(from.year, from.month, from.day);
+    final end = DateTime(to.year, to.month, to.day, 23, 59, 59, 999);
+    return (db.select(db.diaryEntries)
+          ..where((t) => t.entryDate.isBiggerOrEqualValue(start) & t.entryDate.isSmallerOrEqualValue(end))
+          ..orderBy([(t) => OrderingTerm(expression: t.entryDate), (t) => OrderingTerm(expression: t.timestamp)]))
+        .watch();
+  }
 }

@@ -9,8 +9,14 @@ import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../features/diary/presentation/screens/diary_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 
-// Заглушки для вкладок 3 и 4 (добавятся в Фазе 3)
-import '../../core/widgets/placeholder_screen.dart';
+// Полнофункциональные экраны Фазы 3
+import '../../features/recipes/presentation/screens/nutrition_screen.dart';
+import '../../features/analytics/presentation/screens/analytics_screen.dart';
+
+// Диалоги быстрого добавления (FAB)
+import '../../features/food_database/presentation/widgets/food_search_sheet.dart';
+import '../../features/water/presentation/widgets/add_water_dialog.dart';
+import '../../features/weight/presentation/widgets/add_weight_dialog.dart';
 
 /// Главный навигационный маршрутизатор приложения.
 ///
@@ -65,11 +71,7 @@ GoRouter createRouter(SharedPreferences prefs) {
               GoRoute(
                 path: RouteNames.nutrition,
                 name: 'nutrition',
-                builder: (context, state) => const PlaceholderScreen(
-                  title: 'Питание',
-                  icon: Icons.restaurant_menu_rounded,
-                  description: 'Рецепты, планировщик и список покупок\nпоявятся в Фазе 3',
-                ),
+                builder: (context, state) => const NutritionScreen(),
               ),
             ],
           ),
@@ -79,11 +81,7 @@ GoRouter createRouter(SharedPreferences prefs) {
               GoRoute(
                 path: RouteNames.analytics,
                 name: 'analytics',
-                builder: (context, state) => const PlaceholderScreen(
-                  title: 'Статистика',
-                  icon: Icons.bar_chart_rounded,
-                  description: 'Графики и аналитика\nпоявятся в Фазе 3',
-                ),
+                builder: (context, state) => const AnalyticsScreen(),
               ),
             ],
           ),
@@ -194,7 +192,11 @@ class _QuickAddSheet extends StatelessWidget {
             subtitle: 'Найти продукт и указать граммовку',
             onTap: () {
               Navigator.pop(context);
-              // TODO(phase2): открыть поиск продуктов
+              FoodSearchSheet.show(
+                context,
+                mealType: 'lunch',
+                date: DateTime.now(),
+              );
             },
           ),
           const SizedBox(height: 8),
@@ -205,7 +207,7 @@ class _QuickAddSheet extends StatelessWidget {
             subtitle: 'Добавить +250 мл или другой объём',
             onTap: () {
               Navigator.pop(context);
-              // TODO(phase2): добавить воду
+              AddWaterDialog.show(context, date: DateTime.now());
             },
           ),
           const SizedBox(height: 8),
@@ -216,7 +218,7 @@ class _QuickAddSheet extends StatelessWidget {
             subtitle: 'Записать утреннее взвешивание',
             onTap: () {
               Navigator.pop(context);
-              // TODO(phase2): добавить взвешивание
+              AddWeightDialog.show(context);
             },
           ),
         ],

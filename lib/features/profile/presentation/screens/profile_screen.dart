@@ -1,66 +1,306 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../app/theme/app_colors.dart';
+import '../../../../core/utils/nutrition_calculator.dart';
+import '../../../dashboard/presentation/providers/dashboard_providers.dart';
+import '../../../weight/presentation/widgets/weight_history_sheet.dart';
 
-/// Экран профиля пользователя
-/// Полная реализация — в Фазе 2.
-class ProfileScreen extends StatelessWidget {
+/// Экран профиля пользователя с отображением текущих целей и параметров
+class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final profileAsync = ref.watch(userProfileProvider);
+    final profile = profileAsync.value;
+
+    final name = profile?.name.isNotEmpty == true ? profile!.name : 'Пользователь';
+    final age = profile != null ? NutritionCalculator.calculateAge(profile.birthDate) : 28;
+    final height = profile?.heightCm.toInt() ?? 170;
+    final currentWeight = profile?.currentWeightKg ?? 70.0;
+    final targetWeight = profile?.targetWeightKg ?? 65.0;
+    final targetCalories = profile?.targetCalories ?? 2000;
+    final targetProtein = profile?.targetProteinG.toInt() ?? 120;
+    final targetFat = profile?.targetFatG.toInt() ?? 65;
+    final targetCarbs = profile?.targetCarbsG.toInt() ?? 230;
+    final targetWater = profile?.targetWaterMl ?? 2000;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Профиль')),
+      appBar: AppBar(
+        title: const Text('Профиль и цели'),
+      ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
         children: [
-          // Заглушка аватара
+          // ── Карточка аватара и имени ──────────────────────────────
           Center(
             child: CircleAvatar(
-              radius: 44,
+              radius: 46,
               backgroundColor: theme.colorScheme.primaryContainer,
-              child: Icon(
-                Icons.person_rounded,
-                size: 44,
-                color: theme.colorScheme.primary,
+              child: Text(
+                name.isNotEmpty ? name[0].toUpperCase() : 'П',
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.primary,
+                ),
               ),
             ),
           ),
           const SizedBox(height: 12),
           Center(
             child: Text(
-              'Пользователь',
-              style: theme.textTheme.titleLarge,
+              name,
+              style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
           ),
-          const SizedBox(height: 32),
-          Text('Настройки', style: theme.textTheme.titleMedium),
+          Center(
+            child: Text(
+              '$age лет · Рост $height см',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // ── Карточка параметров веса ─────────────────────────────
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+              ),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _ProfileMetric(
+                      label: 'Текущий вес',
+                      value: '${currentWeight.toStringAsFixed(1)} кг',
+                      color: const Color(0xFF6366F1),
+                    ),
+                    Container(width: 1, height: 36, color: theme.colorScheme.outlineVariant),
+                    _ProfileMetric(
+                      label: 'Целевой вес',
+                      value: '${targetWeight.toStringAsFixed(1)} кг',
+                      color: theme.colorScheme.primary,
+                    ),
+                    Container(width: 1, height: 36, color: theme.colorScheme.outlineVariant),
+                    _ProfileMetric(
+                      label: 'Осталось',
+                      value: '${(currentWeight - targetWeight).abs().toStringAsFixed(1)} кг',
+                      color: const Color(0xFFF97316),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () => WeightHistorySheet.show(context),
+                    icon: const Icon(Icons.history_rounded, size: 18),
+                    label: const Text('История взвешиваний'),
+                    style: OutlinedButton.styleFrom(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // ── Карточка суточных норм ───────────────────────────────
+          Text(
+            'Ваши суточные нормы',
+            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+              ),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(Icons.local_fire_department_rounded, color: theme.colorScheme.primary),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Целевой калораж', style: theme.textTheme.bodyMedium),
+                          Text(
+                            '$targetCalories ккал / день',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const Divider(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _MacroItem(label: 'Белки', value: '$targetProtein г', color: AppColors.protein),
+                    _MacroItem(label: 'Жиры', value: '$targetFat г', color: AppColors.fat),
+                    _MacroItem(label: 'Углеводы', value: '$targetCarbs г', color: AppColors.carbs),
+                    _MacroItem(label: 'Вода', value: '$targetWater мл', color: AppColors.water),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // ── Настройки и сброс ────────────────────────────────────
+          Text(
+            'Настройки приложения',
+            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 8),
           _SettingsTile(
-            icon: Icons.dark_mode_outlined,
-            label: 'Тема оформления',
-            onTap: () {},
+            icon: Icons.tune_rounded,
+            label: 'Пройти анкету заново',
+            onTap: () async {
+              final confirm = await showDialog<bool>(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: const Text('Пересчитать цели?'),
+                  content: const Text('Вы сможете заново указать параметры тела и цели.'),
+                  actions: [
+                    TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Отмена')),
+                    FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Начать')),
+                  ],
+                ),
+              );
+              if (confirm == true && context.mounted) {
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.setBool('onboarding_complete', false);
+                if (context.mounted) {
+                  context.go('/onboarding');
+                }
+              }
+            },
           ),
           _SettingsTile(
             icon: Icons.notifications_outlined,
-            label: 'Напоминания',
+            label: 'Напоминания (Фаза 4)',
             onTap: () {},
           ),
           _SettingsTile(
             icon: Icons.backup_outlined,
-            label: 'Резервная копия данных',
+            label: 'Резервная копия данных (Фаза 5)',
             onTap: () {},
           ),
           const SizedBox(height: 16),
           Text('О приложении', style: theme.textTheme.titleMedium),
           const SizedBox(height: 8),
           _SettingsTile(
-            icon: Icons.info_outline_rounded,
-            label: 'Версия 0.1.0 (Фаза 1)',
+            icon: Icons.verified_outlined,
+            label: 'Дневник питания v0.2.0 (Фаза 2)',
             onTap: () {},
           ),
         ],
       ),
+    );
+  }
+}
+
+class _ProfileMetric extends StatelessWidget {
+  const _ProfileMetric({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Column(
+      children: [
+        Text(
+          value,
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: theme.textTheme.labelSmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+            fontSize: 11,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _MacroItem extends StatelessWidget {
+  const _MacroItem({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Column(
+      children: [
+        Text(
+          value,
+          style: theme.textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: theme.textTheme.labelSmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+            fontSize: 11,
+          ),
+        ),
+      ],
     );
   }
 }

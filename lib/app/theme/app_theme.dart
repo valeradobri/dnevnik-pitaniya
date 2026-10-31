@@ -144,7 +144,7 @@ abstract final class AppTheme {
               isLight ? const Color(0xFFD1D5DB) : const Color(0xFF374151),
           disabledForegroundColor:
               isLight ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280),
-          minimumSize: const Size(double.infinity, 52),
+          minimumSize: const Size(64, 48),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppColors.radiusButton),
           ),
@@ -158,7 +158,7 @@ abstract final class AppTheme {
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.primary,
           side: const BorderSide(color: AppColors.primary, width: 1.5),
-          minimumSize: const Size(double.infinity, 52),
+          minimumSize: const Size(64, 48),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppColors.radiusButton),
           ),

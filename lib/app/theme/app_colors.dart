@@ -13,11 +13,13 @@ abstract final class AppColors {
   static const Color primaryContainer = Color(0xFFD1FAE5);
   static const Color onPrimaryContainer = Color(0xFF064E3B);
 
-  // ── Secondary: Тёплый коралл/оранжевый ──────────────────────────────
+  // ── Secondary: Тёплый коралл/оранжевый (Калории) ──────────────────────
   static const Color secondary = Color(0xFFF97316);
   static const Color secondaryLight = Color(0xFFFB923C);
   static const Color secondaryContainer = Color(0xFFFFEDD5);
   static const Color onSecondaryContainer = Color(0xFF7C2D12);
+  static const Color calories = secondary;
+  static const Color caloriesLight = secondaryContainer;
 
   // ── Фоны (Light) ────────────────────────────────────────────────────
   static const Color backgroundLight = Color(0xFFFAF9F6);

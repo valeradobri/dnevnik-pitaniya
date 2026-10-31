@@ -41,4 +41,14 @@ class WeightDao {
   Future<int> deleteWeight(int id) {
     return (db.delete(db.weightEntries)..where((t) => t.id.equals(id))).go();
   }
+
+  /// Реактивный стрим записей веса в диапазоне дат (по возрастанию даты для графиков)
+  Stream<List<WeightEntry>> watchWeightForRange(DateTime from, DateTime to) {
+    final start = DateTime(from.year, from.month, from.day);
+    final end = DateTime(to.year, to.month, to.day, 23, 59, 59, 999);
+    return (db.select(db.weightEntries)
+          ..where((t) => t.entryDate.isBiggerOrEqualValue(start) & t.entryDate.isSmallerOrEqualValue(end))
+          ..orderBy([(t) => OrderingTerm(expression: t.entryDate)]))
+        .watch();
+  }
 }

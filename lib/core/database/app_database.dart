@@ -8,6 +8,8 @@ import 'daos/diary_dao.dart';
 import 'daos/user_dao.dart';
 import 'daos/water_dao.dart';
 import 'daos/weight_dao.dart';
+import 'daos/recipe_dao.dart';
+import 'daos/meal_plan_dao.dart';
 
 part 'app_database.g.dart';
 
@@ -53,6 +55,7 @@ class AppDatabase extends _$AppDatabase {
   Future<void> _seedInitialData() async {
     await _seedAchievements();
     await _seedFoodProducts();
+    await recipeDao.seedInitialRecipes();
   }
 
   Future<void> _seedFoodProducts() async {
@@ -118,11 +121,19 @@ class AppDatabase extends _$AppDatabase {
   late final userDao = UserDao(this);
   late final waterDao = WaterDao(this);
   late final weightDao = WeightDao(this);
+  late final recipeDao = RecipeDao(this);
+  late final mealPlanDao = MealPlanDao(this);
 }
 
-/// Инициализация подключения к SQLite-файлу на устройстве
+/// Инициализация подключения к SQLite-файлу на устройстве (поддержка Android, iOS, Windows, Web)
 QueryExecutor _openConnection() {
-  return driftDatabase(name: 'dnevnik_db');
+  return driftDatabase(
+    name: 'dnevnik_db',
+    web: DriftWebOptions(
+      sqlite3Wasm: Uri.parse('sqlite3.wasm'),
+      driftWorker: Uri.parse('drift_worker.js'),
+    ),
+  );
 }
 
 // ─── Riverpod Провайдеры ───────────────────────────────────────────────
@@ -150,5 +161,13 @@ final waterDaoProvider = Provider<WaterDao>((ref) {
 
 final weightDaoProvider = Provider<WeightDao>((ref) {
   return ref.watch(databaseProvider).weightDao;
+});
+
+final recipeDaoProvider = Provider<RecipeDao>((ref) {
+  return ref.watch(databaseProvider).recipeDao;
+});
+
+final mealPlanDaoProvider = Provider<MealPlanDao>((ref) {
+  return ref.watch(databaseProvider).mealPlanDao;
 });
 
