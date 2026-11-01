@@ -97,5 +97,61 @@ void main() {
 
       await tester.pumpWidget(const SizedBox.shrink());
     });
+
+    testWidgets('ServingSizeSheet does NOT show cooking toggle for ready-to-eat foods like Avocado',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
+      final avocado = FoodProduct(
+        id: 2,
+        name: 'Авокадо свежее',
+        brand: null,
+        caloriesPer100g: 160.0,
+        proteinPer100g: 2.0,
+        fatPer100g: 14.7,
+        carbsPer100g: 1.8,
+        category: 'fruits',
+        sourceType: 'verified',
+        servingSizeG: 100.0,
+        isFavorite: false,
+        createdAt: DateTime.now(),
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            databaseProvider.overrideWithValue(testDb),
+            diaryDaoProvider.overrideWithValue(testDb.diaryDao),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: ServingSizeSheet(
+                product: avocado,
+                initialMealType: 'breakfast',
+                date: DateTime.now(),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Проверяем название
+      expect(find.text('Авокадо свежее'), findsOneWidget);
+
+      // Проверяем, что НЕТ тумблера «В сухом / сыром» и «В готовом виде»
+      expect(find.text('В сухом / сыром'), findsNothing);
+      expect(find.text('В готовом виде'), findsNothing);
+      expect(find.textContaining('Коэфф.'), findsNothing);
+
+      // Проверяем обычный лаконичный интерфейс
+      expect(find.text('Размер порции'), findsOneWidget);
+      expect(find.textContaining('Добавить в дневник'), findsOneWidget);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
   });
 }
+

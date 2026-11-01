@@ -131,6 +131,15 @@ void main() {
       expect(NutritionCalculator.getCookingCoefficient(name: 'Спагетти Barilla', category: 'cereals'), equals(2.2));
       expect(NutritionCalculator.getCookingCoefficient(name: 'Куриное филе', category: 'meat'), equals(0.75));
       expect(NutritionCalculator.getCookingCoefficient(name: 'Гречневая каша на воде', category: 'cereals'), equals(1.0));
+      expect(NutritionCalculator.getCookingCoefficient(name: 'Авокадо', category: 'fruits'), equals(1.0));
+    });
+
+    test('supportsCookingState возвращает true только для круп/мяса, false для авокадо и молочки', () {
+      expect(NutritionCalculator.supportsCookingState(name: 'Гречневая крупа', category: 'cereals'), isTrue);
+      expect(NutritionCalculator.supportsCookingState(name: 'Куриная грудка', category: 'meat'), isTrue);
+      expect(NutritionCalculator.supportsCookingState(name: 'Авокадо', category: 'fruits'), isFalse);
+      expect(NutritionCalculator.supportsCookingState(name: 'Творог 5%', category: 'dairy'), isFalse);
+      expect(NutritionCalculator.supportsCookingState(name: 'Гречневая каша на воде', category: 'cereals'), isFalse);
     });
 
     test('200 г готовой гречки при k=2.5 эквивалентны 80 г сухой', () {

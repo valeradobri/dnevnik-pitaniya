@@ -45,7 +45,8 @@ class _ServingSizeSheetState extends ConsumerState<ServingSizeSheet> {
   double _grams = 100.0;
   bool _isLoading = false;
 
-  // Режим: сухой/сырой (false) или готовый (true)
+  // Поддерживает ли продукт разграничение сухого/сырого и готового вида (крупы, макароны, сырое мясо)
+  late final bool _supportsCooking;
   bool _isCooked = false;
   late double _coefficient;
 
@@ -62,23 +63,19 @@ class _ServingSizeSheetState extends ConsumerState<ServingSizeSheet> {
   @override
   void initState() {
     super.initState();
+    _supportsCooking = NutritionCalculator.supportsCookingState(
+      name: widget.product.name,
+      category: widget.product.category,
+    );
+
     final defaultCoeff = NutritionCalculator.getCookingCoefficient(
       name: widget.product.name,
       category: widget.product.category,
     );
-    _coefficient = defaultCoeff == 1.0 ? 2.5 : defaultCoeff;
+    _coefficient = _supportsCooking ? defaultCoeff : 1.0;
+    _isCooked = false;
 
-    // Если в названии уже прямо написано «каша» или «вареный», то продукт уже готов
-    final isAlreadyCooked = widget.product.name.toLowerCase().contains('каша') ||
-        widget.product.name.toLowerCase().contains('варен');
-
-    if (isAlreadyCooked) {
-      _isCooked = true;
-      _grams = widget.product.servingSizeG > 0 ? widget.product.servingSizeG : 200.0;
-    } else {
-      _grams = widget.product.servingSizeG > 0 ? widget.product.servingSizeG : 100.0;
-    }
-
+    _grams = widget.product.servingSizeG > 0 ? widget.product.servingSizeG : 100.0;
     _gramsController = TextEditingController(text: _grams.toInt().toString());
     _selectedMealType = widget.initialMealType;
   }
@@ -104,7 +101,7 @@ class _ServingSizeSheetState extends ConsumerState<ServingSizeSheet> {
   }
 
   void _toggleCookedMode(bool cooked) {
-    if (cooked == _isCooked) return;
+    if (!_supportsCooking || cooked == _isCooked) return;
     setState(() {
       _isCooked = cooked;
       if (_isCooked) {
@@ -182,7 +179,7 @@ class _ServingSizeSheetState extends ConsumerState<ServingSizeSheet> {
 
     try {
       final p = widget.product;
-      final dryGrams = _isCooked
+      final dryGrams = (_supportsCooking && _isCooked)
           ? NutritionCalculator.calculateDryEquivalent(
               cookedGrams: _grams,
               coefficient: _coefficient,
@@ -201,11 +198,11 @@ class _ServingSizeSheetState extends ConsumerState<ServingSizeSheet> {
           p.name.toLowerCase().contains('каша') ||
           p.name.toLowerCase().contains('варен');
 
-      final displayName = _isCooked && !isAlreadyMarkedCooked
+      final displayName = (_supportsCooking && _isCooked && !isAlreadyMarkedCooked)
           ? '${p.name} (готовый)'
           : p.name;
 
-      final notes = _isCooked
+      final notes = (_supportsCooking && _isCooked)
           ? 'В готовом виде: ${_grams.toInt()} г (сухой экв.: ${dryGrams.round()} г, ×${_coefficient.toStringAsFixed(1)})'
           : null;
 
@@ -251,7 +248,7 @@ class _ServingSizeSheetState extends ConsumerState<ServingSizeSheet> {
     final p = widget.product;
 
     // Рассчитываем сухой эквивалент и питательные вещества
-    final dryGrams = _isCooked
+    final dryGrams = (_supportsCooking && _isCooked)
         ? NutritionCalculator.calculateDryEquivalent(
             cookedGrams: _grams,
             coefficient: _coefficient,
@@ -271,7 +268,8 @@ class _ServingSizeSheetState extends ConsumerState<ServingSizeSheet> {
       carbsPer100g: p.carbsPer100g,
     );
 
-    final activeChips = _isCooked ? _cookedQuickChips : _dryQuickChips;
+    final activeChips =
+        (_supportsCooking && _isCooked) ? _cookedQuickChips : _dryQuickChips;
 
     return Padding(
       padding: EdgeInsets.only(
@@ -336,9 +334,9 @@ class _ServingSizeSheetState extends ConsumerState<ServingSizeSheet> {
                         ),
                       ),
                       Text(
-                        _isCooked
+                        _supportsCooking && _isCooked
                             ? 'за ${_grams.toInt()} г (готовый)'
-                            : 'за ${_grams.toInt()} г (сухой)',
+                            : 'за ${_grams.toInt()} г',
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
@@ -347,146 +345,147 @@ class _ServingSizeSheetState extends ConsumerState<ServingSizeSheet> {
                   ),
                 ],
               ),
-              const SizedBox(height: 14),
 
-              // ── Переключатель: В сухом виде / В готовом виде ────────
-              SizedBox(
-                width: double.infinity,
-                child: SegmentedButton<bool>(
-                  segments: const [
-                    ButtonSegment<bool>(
-                      value: false,
-                      icon: Icon(Icons.grain_rounded, size: 18),
-                      label: Text('В сухом / сыром'),
-                    ),
-                    ButtonSegment<bool>(
-                      value: true,
-                      icon: Icon(Icons.soup_kitchen_rounded, size: 18),
-                      label: Text('В готовом виде'),
-                    ),
-                  ],
-                  selected: {_isCooked},
-                  onSelectionChanged: (set) => _toggleCookedMode(set.first),
-                ),
-              ),
-              const SizedBox(height: 10),
-
-              // ── Информационная плашка пересчета ───────────────────
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                decoration: BoxDecoration(
-                  color: _isCooked
-                      ? theme.colorScheme.primaryContainer.withValues(alpha: 0.35)
-                      : theme.colorScheme.surfaceContainerLowest,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: _isCooked
-                        ? theme.colorScheme.primary.withValues(alpha: 0.3)
-                        : theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+              // ── Переключатель: В сухом виде / В готовом виде (только для круп, макарон, мяса) ────────
+              if (_supportsCooking) ...[
+                const SizedBox(height: 14),
+                SizedBox(
+                  width: double.infinity,
+                  child: SegmentedButton<bool>(
+                    segments: const [
+                      ButtonSegment<bool>(
+                        value: false,
+                        icon: Icon(Icons.grain_rounded, size: 18),
+                        label: Text('В сухом / сыром'),
+                      ),
+                      ButtonSegment<bool>(
+                        value: true,
+                        icon: Icon(Icons.soup_kitchen_rounded, size: 18),
+                        label: Text('В готовом виде'),
+                      ),
+                    ],
+                    selected: {_isCooked},
+                    onSelectionChanged: (set) => _toggleCookedMode(set.first),
                   ),
                 ),
-                child: _isCooked
-                    ? Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(Icons.auto_awesome_rounded,
-                                  size: 16, color: theme.colorScheme.primary),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  'В тарелке: ${_grams.toInt()} г  ≈  ${dryGrams.round()} г сухого продукта',
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: theme.colorScheme.onSurface,
+                const SizedBox(height: 10),
+
+                // ── Информационная плашка пересчета ───────────────────
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: _isCooked
+                        ? theme.colorScheme.primaryContainer.withValues(alpha: 0.35)
+                        : theme.colorScheme.surfaceContainerLowest,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: _isCooked
+                          ? theme.colorScheme.primary.withValues(alpha: 0.3)
+                          : theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  child: _isCooked
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.auto_awesome_rounded,
+                                    size: 16, color: theme.colorScheme.primary),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    'В тарелке: ${_grams.toInt()} г  ≈  ${dryGrams.round()} г сухого продукта',
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      color: theme.colorScheme.onSurface,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          Wrap(
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            spacing: 4,
-                            runSpacing: 4,
-                            children: [
-                              Text(
-                                'Коэфф. ${_coefficient >= 1.0 ? "разваривания" : "ужарки"}: ×${_coefficient.toStringAsFixed(1)}',
-                                style: theme.textTheme.labelSmall?.copyWith(
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Wrap(
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              spacing: 4,
+                              runSpacing: 4,
+                              children: [
+                                Text(
+                                  'Коэфф. ${_coefficient >= 1.0 ? "разваривания" : "ужарки"}: ×${_coefficient.toStringAsFixed(1)}',
+                                  style: theme.textTheme.labelSmall?.copyWith(
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                if (_coefficient >= 1.0) ...[
+                                  _MiniCoeffChip(
+                                    label: '2.0',
+                                    isSelected: (_coefficient - 2.0).abs() < 0.05,
+                                    onTap: () => setState(() => _coefficient = 2.0),
+                                  ),
+                                  _MiniCoeffChip(
+                                    label: '2.5',
+                                    isSelected: (_coefficient - 2.5).abs() < 0.05,
+                                    onTap: () => setState(() => _coefficient = 2.5),
+                                  ),
+                                  _MiniCoeffChip(
+                                    label: '2.8',
+                                    isSelected: (_coefficient - 2.8).abs() < 0.05,
+                                    onTap: () => setState(() => _coefficient = 2.8),
+                                  ),
+                                  _MiniCoeffChip(
+                                    label: '3.0',
+                                    isSelected: (_coefficient - 3.0).abs() < 0.05,
+                                    onTap: () => setState(() => _coefficient = 3.0),
+                                  ),
+                                ] else ...[
+                                  _MiniCoeffChip(
+                                    label: '0.70',
+                                    isSelected: (_coefficient - 0.70).abs() < 0.02,
+                                    onTap: () => setState(() => _coefficient = 0.70),
+                                  ),
+                                  _MiniCoeffChip(
+                                    label: '0.75',
+                                    isSelected: (_coefficient - 0.75).abs() < 0.02,
+                                    onTap: () => setState(() => _coefficient = 0.75),
+                                  ),
+                                  _MiniCoeffChip(
+                                    label: '0.80',
+                                    isSelected: (_coefficient - 0.80).abs() < 0.02,
+                                    onTap: () => setState(() => _coefficient = 0.80),
+                                  ),
+                                ],
+                                InkWell(
+                                  onTap: _showCustomCoefficientDialog,
+                                  borderRadius: BorderRadius.circular(6),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                    child: Icon(Icons.edit_outlined,
+                                        size: 15, color: theme.colorScheme.primary),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        )
+                      : Row(
+                          children: [
+                            Icon(Icons.info_outline_rounded,
+                                size: 16, color: theme.colorScheme.primary),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Сухой вес: ${_grams.toInt()} г  →  после готовки выйдет ~${expectedCookedGrams.round()} г',
+                                style: theme.textTheme.bodySmall?.copyWith(
                                   color: theme.colorScheme.onSurfaceVariant,
                                 ),
                               ),
-                              const SizedBox(width: 4),
-                              // Быстрый выбор популярных коэффициентов
-                              if (_coefficient >= 1.0) ...[
-                                _MiniCoeffChip(
-                                  label: '2.0',
-                                  isSelected: (_coefficient - 2.0).abs() < 0.05,
-                                  onTap: () => setState(() => _coefficient = 2.0),
-                                ),
-                                _MiniCoeffChip(
-                                  label: '2.5',
-                                  isSelected: (_coefficient - 2.5).abs() < 0.05,
-                                  onTap: () => setState(() => _coefficient = 2.5),
-                                ),
-                                _MiniCoeffChip(
-                                  label: '2.8',
-                                  isSelected: (_coefficient - 2.8).abs() < 0.05,
-                                  onTap: () => setState(() => _coefficient = 2.8),
-                                ),
-                                _MiniCoeffChip(
-                                  label: '3.0',
-                                  isSelected: (_coefficient - 3.0).abs() < 0.05,
-                                  onTap: () => setState(() => _coefficient = 3.0),
-                                ),
-                              ] else ...[
-                                _MiniCoeffChip(
-                                  label: '0.70',
-                                  isSelected: (_coefficient - 0.70).abs() < 0.02,
-                                  onTap: () => setState(() => _coefficient = 0.70),
-                                ),
-                                _MiniCoeffChip(
-                                  label: '0.75',
-                                  isSelected: (_coefficient - 0.75).abs() < 0.02,
-                                  onTap: () => setState(() => _coefficient = 0.75),
-                                ),
-                                _MiniCoeffChip(
-                                  label: '0.80',
-                                  isSelected: (_coefficient - 0.80).abs() < 0.02,
-                                  onTap: () => setState(() => _coefficient = 0.80),
-                                ),
-                              ],
-                              InkWell(
-                                onTap: _showCustomCoefficientDialog,
-                                borderRadius: BorderRadius.circular(6),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                                  child: Icon(Icons.edit_outlined,
-                                      size: 15, color: theme.colorScheme.primary),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      )
-                    : Row(
-                        children: [
-                          Icon(Icons.info_outline_rounded,
-                              size: 16, color: theme.colorScheme.primary),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              'Сухой вес: ${_grams.toInt()} г  →  после готовки выйдет ~${expectedCookedGrams.round()} г',
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant,
-                              ),
                             ),
-                          ),
-                        ],
-                      ),
-              ),
+                          ],
+                        ),
+                ),
+              ],
               const SizedBox(height: 14),
 
               // Карточка БЖУ для рассчитанной порции
@@ -544,11 +543,15 @@ class _ServingSizeSheetState extends ConsumerState<ServingSizeSheet> {
                 children: [
                   Expanded(
                     child: Text(
-                      _isCooked ? 'Вес готового блюда (в тарелке)' : 'Вес сухого продукта',
+                      _supportsCooking
+                          ? (_isCooked
+                              ? 'Вес готового блюда (в тарелке)'
+                              : 'Вес сухого продукта')
+                          : 'Размер порции',
                       style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
                     ),
                   ),
-                  if (_isCooked)
+                  if (_supportsCooking && _isCooked)
                     Text(
                       '~${dryGrams.round()} г сухого',
                       style: theme.textTheme.bodySmall?.copyWith(
@@ -566,7 +569,9 @@ class _ServingSizeSheetState extends ConsumerState<ServingSizeSheet> {
                       controller: _gramsController,
                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
                       decoration: InputDecoration(
-                        labelText: _isCooked ? 'Вес в тарелке' : 'Сухой вес',
+                        labelText: _supportsCooking
+                            ? (_isCooked ? 'Вес в тарелке' : 'Сухой вес')
+                            : 'Граммы',
                         suffixText: 'г',
                         filled: true,
                         fillColor: theme.colorScheme.surfaceContainerLowest,
@@ -621,7 +626,7 @@ class _ServingSizeSheetState extends ConsumerState<ServingSizeSheet> {
                           child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                         )
                       : Text(
-                          _isCooked
+                          _supportsCooking && _isCooked
                               ? 'Добавить готовую порцию (${_grams.toInt()} г)'
                               : 'Добавить в дневник (${_grams.toInt()} г)',
                           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
