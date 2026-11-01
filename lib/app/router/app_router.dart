@@ -15,6 +15,7 @@ import '../../features/analytics/presentation/screens/analytics_screen.dart';
 
 // Диалоги быстрого добавления (FAB)
 import '../../features/food_database/presentation/widgets/food_search_sheet.dart';
+import '../../features/food_database/presentation/screens/barcode_scanner_screen.dart';
 import '../../features/water/presentation/widgets/add_water_dialog.dart';
 import '../../features/weight/presentation/widgets/add_weight_dialog.dart';
 
@@ -185,6 +186,21 @@ class _QuickAddSheet extends StatelessWidget {
             style: theme.textTheme.titleLarge,
           ),
           const SizedBox(height: 16),
+          _QuickAddItem(
+            icon: Icons.qr_code_scanner_rounded,
+            color: const Color(0xFFF59E0B),
+            label: 'Сканировать штрих-код',
+            subtitle: 'Навести камеру на упаковку продукта',
+            onTap: () {
+              Navigator.pop(context);
+              BarcodeScannerScreen.show(
+                context,
+                mealType: 'lunch',
+                date: DateTime.now(),
+              );
+            },
+          ),
+          const SizedBox(height: 8),
           _QuickAddItem(
             icon: Icons.add_circle_outline_rounded,
             color: const Color(0xFF059669),

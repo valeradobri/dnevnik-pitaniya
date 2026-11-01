@@ -71,4 +71,12 @@ class FoodDao {
           ..orderBy([(t) => OrderingTerm(expression: t.name)]))
         .watch();
   }
+
+  /// Поиск продукта по штрихкоду
+  Future<FoodProduct?> getFoodByBarcode(String barcode) {
+    final clean = barcode.trim();
+    if (clean.isEmpty) return Future.value(null);
+    return (db.select(db.foodProducts)..where((t) => t.barcode.equals(clean)))
+        .getSingleOrNull();
+  }
 }

@@ -5,6 +5,7 @@ import '../../../../core/database/app_database.dart';
 import '../../data/open_food_facts_client.dart';
 import 'serving_size_sheet.dart';
 import 'create_food_dialog.dart';
+import '../screens/barcode_scanner_screen.dart';
 
 class FoodSearchSheet extends ConsumerStatefulWidget {
   const FoodSearchSheet({
@@ -179,15 +180,36 @@ class _FoodSearchSheetState extends ConsumerState<FoodSearchSheet> {
               decoration: InputDecoration(
                 hintText: 'Поиск (гречка, курица, банан...)',
                 prefixIcon: const Icon(Icons.search_rounded),
-                suffixIcon: _query.isNotEmpty
-                    ? IconButton(
+                suffixIcon: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (_query.isNotEmpty)
+                      IconButton(
                         icon: const Icon(Icons.clear_rounded),
                         onPressed: () {
                           _searchController.clear();
                           setState(() => _query = '');
                         },
-                      )
-                    : null,
+                      ),
+                    IconButton(
+                      icon: Icon(
+                        Icons.qr_code_scanner_rounded,
+                        color: theme.colorScheme.primary,
+                      ),
+                      tooltip: 'Сканировать штрих-код',
+                      onPressed: () async {
+                        final added = await BarcodeScannerScreen.show(
+                          context,
+                          mealType: widget.mealType,
+                          date: widget.date,
+                        );
+                        if (added == true && context.mounted) {
+                          Navigator.pop(context);
+                        }
+                      },
+                    ),
+                  ],
+                ),
                 filled: true,
                 fillColor: theme.colorScheme.surfaceContainerLowest,
                 border: OutlineInputBorder(

@@ -4,12 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/database/app_database.dart';
 
 class CreateFoodDialog extends ConsumerStatefulWidget {
-  const CreateFoodDialog({super.key});
+  const CreateFoodDialog({super.key, this.initialBarcode});
 
-  static Future<FoodProduct?> show(BuildContext context) {
+  final String? initialBarcode;
+
+  static Future<FoodProduct?> show(BuildContext context, {String? initialBarcode}) {
     return showDialog<FoodProduct>(
       context: context,
-      builder: (ctx) => const CreateFoodDialog(),
+      builder: (ctx) => CreateFoodDialog(initialBarcode: initialBarcode),
     );
   }
 
@@ -70,6 +72,7 @@ class _CreateFoodDialogState extends ConsumerState<CreateFoodDialog> {
         FoodProductsCompanion.insert(
           name: name,
           brand: drift.Value(brand),
+          barcode: drift.Value(widget.initialBarcode),
           caloriesPer100g: cals,
           proteinPer100g: prot,
           fatPer100g: fat,
@@ -130,7 +133,32 @@ class _CreateFoodDialogState extends ConsumerState<CreateFoodDialog> {
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
               ),
-              const SizedBox(height: 16),
+              if (widget.initialBarcode != null) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.3)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.qr_code_scanner_rounded, size: 16, color: theme.colorScheme.primary),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Штрих-код: ${widget.initialBarcode}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
 
               // Название
               TextFormField(
