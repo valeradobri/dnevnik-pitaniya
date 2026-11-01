@@ -167,6 +167,140 @@ abstract final class NutritionCalculator {
     }
     return age;
   }
+
+  // ─── Расчёт сухого и готового продукта (варка / ужарка) ──────────────
+
+  /// Определение типового коэффициента готовки по названию и категории.
+  ///
+  /// Коэффициент [k]:
+  /// - k > 1.0: разваривание (крупы, бобовые, макароны увеличиваются в весе)
+  /// - k < 1.0: ужарка / потеря влаги (мясо, птица, рыба уменьшаются в весе)
+  /// - k = 1.0: уже готовые продукты, овощи, фрукты, хлеб
+  static double getCookingCoefficient({
+    required String name,
+    required String category,
+  }) {
+    final lowerName = name.toLowerCase();
+
+    // Если в названии уже указано, что блюдо готовое/вареное/каша на воде
+    if (lowerName.contains('каша на') ||
+        lowerName.contains('варен') ||
+        lowerName.contains('готов') ||
+        lowerName.contains('жарен') ||
+        lowerName.contains('запечен')) {
+      return 1.0;
+    }
+
+    // Гречка (100г сухой → ~250г каши)
+    if (lowerName.contains('гречк') || lowerName.contains('гречнев')) {
+      return 2.5;
+    }
+    // Рис (100г сухой → ~280г риса)
+    if (lowerName.contains('рис')) {
+      return 2.8;
+    }
+    // Макароны / паста (100г сухих → ~220г готовых)
+    if (lowerName.contains('макарон') ||
+        lowerName.contains('спагетти') ||
+        lowerName.contains('паста') ||
+        lowerName.contains('вермишель') ||
+        lowerName.contains('лапша')) {
+      return 2.2;
+    }
+    // Овсянка / геркулес (100г хлопьев → ~300г каши)
+    if (lowerName.contains('овсян') || lowerName.contains('геркулес')) {
+      return 3.0;
+    }
+    // Пшено, перловка, булгур, кускус, киноа, бобовые
+    if (lowerName.contains('пшен') ||
+        lowerName.contains('перлов') ||
+        lowerName.contains('булгур') ||
+        lowerName.contains('кускус') ||
+        lowerName.contains('киноа') ||
+        lowerName.contains('чечевиц') ||
+        lowerName.contains('нут') ||
+        lowerName.contains('фасол')) {
+      return 2.5;
+    }
+
+    // Мясо и птица (ужарка: ~0.75)
+    if (category == 'meat' ||
+        lowerName.contains('куриц') ||
+        lowerName.contains('курин') ||
+        lowerName.contains('говядин') ||
+        lowerName.contains('свинин') ||
+        lowerName.contains('индейк') ||
+        lowerName.contains('фарш')) {
+      return 0.75;
+    }
+
+    // Рыба (ужарка: ~0.80)
+    if (category == 'fish' ||
+        lowerName.contains('рыб') ||
+        lowerName.contains('треск') ||
+        lowerName.contains('лосос') ||
+        lowerName.contains('минтай') ||
+        lowerName.contains('тунец')) {
+      return 0.80;
+    }
+
+    // Общая категория круп
+    if (category == 'cereals' || category == 'grains') {
+      return 2.5;
+    }
+
+    return 1.0;
+  }
+
+  /// Рассчитывает сухой/исходный эквивалент веса (в граммах) из веса готового продукта.
+  ///
+  /// [cookedGrams] — вес готового блюда (например, 200 г каши на тарелке).
+  /// [coefficient] — коэффициент разваривания/уварки (например, 2.5 для гречки).
+  ///
+  /// Формула: dryGrams = cookedGrams / coefficient.
+  static double calculateDryEquivalent({
+    required double cookedGrams,
+    required double coefficient,
+  }) {
+    if (coefficient <= 0) return cookedGrams;
+    return cookedGrams / coefficient;
+  }
+
+  /// Рассчитывает ожидаемый вес готового продукта из веса сухого/сырого.
+  ///
+  /// [dryGrams] — вес сухого продукта (например, 80 г сухой гречки).
+  /// [coefficient] — коэффициент разваривания/уварки (например, 2.5 для гречки).
+  ///
+  /// Формула: cookedGrams = dryGrams * coefficient.
+  static double calculateCookedWeight({
+    required double dryGrams,
+    required double coefficient,
+  }) {
+    return dryGrams * coefficient;
+  }
+
+  /// Пересчитывает КБЖУ продукта для указанного веса ГОТОВОГО блюда,
+  /// когда нутриенты в базе заданы для сухого/сырого состояния.
+  static NutrientAmount calculateForCookedGrams({
+    required double cookedGrams,
+    required double coefficient,
+    required double caloriesPer100g,
+    required double proteinPer100g,
+    required double fatPer100g,
+    required double carbsPer100g,
+  }) {
+    final dryGrams = calculateDryEquivalent(
+      cookedGrams: cookedGrams,
+      coefficient: coefficient,
+    );
+    return calculateForGrams(
+      grams: dryGrams,
+      caloriesPer100g: caloriesPer100g,
+      proteinPer100g: proteinPer100g,
+      fatPer100g: fatPer100g,
+      carbsPer100g: carbsPer100g,
+    );
+  }
 }
 
 // ─── Value Objects ──────────────────────────────────────────────────────────

@@ -388,6 +388,17 @@ class _DiaryMealSection extends ConsumerWidget {
                                 fontSize: 11,
                               ),
                             ),
+                            if (entry.notes != null && entry.notes!.isNotEmpty) ...[
+                              const SizedBox(height: 2),
+                              Text(
+                                entry.notes!,
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  color: theme.colorScheme.primary,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ),

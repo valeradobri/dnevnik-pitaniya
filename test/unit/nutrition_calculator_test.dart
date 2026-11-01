@@ -123,4 +123,45 @@ void main() {
       expect(water, equals(2475));
     });
   });
+
+  group('NutritionCalculator — Сухой vs Готовый продукт (разваривание / ужарка)', () {
+    test('Определение коэффициента по крупам и мясу', () {
+      expect(NutritionCalculator.getCookingCoefficient(name: 'Гречневая крупа', category: 'cereals'), equals(2.5));
+      expect(NutritionCalculator.getCookingCoefficient(name: 'Рис басмати', category: 'cereals'), equals(2.8));
+      expect(NutritionCalculator.getCookingCoefficient(name: 'Спагетти Barilla', category: 'cereals'), equals(2.2));
+      expect(NutritionCalculator.getCookingCoefficient(name: 'Куриное филе', category: 'meat'), equals(0.75));
+      expect(NutritionCalculator.getCookingCoefficient(name: 'Гречневая каша на воде', category: 'cereals'), equals(1.0));
+    });
+
+    test('200 г готовой гречки при k=2.5 эквивалентны 80 г сухой', () {
+      final dry = NutritionCalculator.calculateDryEquivalent(
+        cookedGrams: 200,
+        coefficient: 2.5,
+      );
+      expect(dry, closeTo(80.0, 0.01));
+    });
+
+    test('80 г сухой гречки при k=2.5 дают 200 г готовой каши', () {
+      final cooked = NutritionCalculator.calculateCookedWeight(
+        dryGrams: 80,
+        coefficient: 2.5,
+      );
+      expect(cooked, closeTo(200.0, 0.01));
+    });
+
+    test('Расчёт КБЖУ для 200 г готовой гречки (сухая: 313 ккал на 100 г)', () {
+      // 200 г готовой = 80 г сухой → 313 * 0.8 = 250.4 ккал
+      final amount = NutritionCalculator.calculateForCookedGrams(
+        cookedGrams: 200,
+        coefficient: 2.5,
+        caloriesPer100g: 313.0,
+        proteinPer100g: 12.6,
+        fatPer100g: 3.3,
+        carbsPer100g: 62.1,
+      );
+      expect(amount.calories, closeTo(250.4, 0.1));
+      expect(amount.protein, closeTo(10.08, 0.1));
+    });
+  });
 }
+
