@@ -31,6 +31,9 @@ abstract final class RouteNames {
   // ── Вес ─────────────────────────────────────────────────────────────
   static const String weightHistory = '/home/analytics/weight';
 
+  // ── Геймификация и привычки ─────────────────────────────────────────
+  static const String achievements = '/achievements';
+
   // ── Модальные экраны ────────────────────────────────────────────────
   static const String quickAddModal = '/quick-add';
 }

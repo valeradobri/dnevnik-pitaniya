@@ -10,6 +10,7 @@ import '../../../water/presentation/widgets/add_water_dialog.dart';
 import '../../../water/presentation/widgets/water_history_sheet.dart';
 import '../../../weight/presentation/widgets/add_weight_dialog.dart';
 import '../../../food_database/presentation/widgets/food_search_sheet.dart';
+import '../../../gamification/presentation/widgets/habits_streak_card.dart';
 import '../providers/dashboard_providers.dart';
 
 /// Главный экран (Дашборд) с реактивным подключением к Drift SQLite и Riverpod
@@ -91,6 +92,10 @@ class DashboardScreen extends ConsumerWidget {
                 delegate: SliverChildListDelegate([
                   // ── Мотивирующий бережный совет дня ──────────────────
                   _SupportiveQuoteCard(),
+                  const SizedBox(height: 14),
+
+                  // ── Карточка привычек и серии без вины ───────────────
+                  const HabitsStreakCard(),
                   const SizedBox(height: 14),
 
                   // ── Главная карточка калорий и БЖУ ───────────────────

@@ -6,6 +6,7 @@ import '../../data/open_food_facts_client.dart';
 import 'serving_size_sheet.dart';
 import 'create_food_dialog.dart';
 import '../screens/barcode_scanner_screen.dart';
+import '../../../../core/widgets/filter_pill.dart';
 
 class FoodSearchSheet extends ConsumerStatefulWidget {
   const FoodSearchSheet({
@@ -42,17 +43,17 @@ class _FoodSearchSheetState extends ConsumerState<FoodSearchSheet> {
   List<RemoteFoodProduct>? _onlineResults;
   final OpenFoodFactsClient _offClient = OpenFoodFactsClient();
 
-  final _categories = const [
-    ('all', 'Все'),
-    ('favorites', '★ Избранное'),
-    ('grains', 'Крупы'),
-    ('meat', 'Мясо и птица'),
-    ('fish', 'Рыба'),
-    ('dairy', 'Молочные'),
-    ('vegetables', 'Овощи'),
-    ('fruits', 'Фрукты'),
-    ('nuts', 'Орехи'),
-    ('drinks', 'Напитки'),
+  final List<(String, String, IconData?)> _categories = const [
+    ('all', 'Все', null),
+    ('favorites', 'Избранное', Icons.star_rounded),
+    ('grains', 'Крупы', null),
+    ('meat', 'Мясо и птица', null),
+    ('fish', 'Рыба', null),
+    ('dairy', 'Молочные', null),
+    ('vegetables', 'Овощи', null),
+    ('fruits', 'Фрукты', null),
+    ('nuts', 'Орехи', null),
+    ('drinks', 'Напитки', null),
   ];
 
   @override
@@ -146,12 +147,16 @@ class _FoodSearchSheetState extends ConsumerState<FoodSearchSheet> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Выбор продукта',
-                  style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                Expanded(
+                  child: Text(
+                    'Выбор продукта',
+                    style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
+                const SizedBox(width: 8),
                 TextButton.icon(
                   onPressed: () async {
                     final created = await CreateFoodDialog.show(context);
@@ -164,6 +169,11 @@ class _FoodSearchSheetState extends ConsumerState<FoodSearchSheet> {
                       );
                     }
                   },
+                  style: TextButton.styleFrom(
+                    visualDensity: VisualDensity.compact,
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
                   icon: const Icon(Icons.add_rounded, size: 18),
                   label: const Text('Свой продукт'),
                 ),
@@ -223,7 +233,7 @@ class _FoodSearchSheetState extends ConsumerState<FoodSearchSheet> {
           ),
           const SizedBox(height: 12),
 
-          // Горизонтальные чипы категорий
+          // Горизонтальные плашки категорий
           SizedBox(
             height: 38,
             child: ListView.separated(
@@ -234,12 +244,13 @@ class _FoodSearchSheetState extends ConsumerState<FoodSearchSheet> {
               itemBuilder: (context, index) {
                 final cat = _categories[index];
                 final isSelected = _selectedCategory == cat.$1;
-                return ChoiceChip(
-                  label: Text(cat.$2),
-                  selected: isSelected,
-                  onSelected: (selected) {
-                    if (selected) setState(() => _selectedCategory = cat.$1);
-                  },
+                return Center(
+                  child: FilterPill(
+                    label: cat.$2,
+                    icon: cat.$3,
+                    isSelected: isSelected,
+                    onTap: () => setState(() => _selectedCategory = cat.$1),
+                  ),
                 );
               },
             ),

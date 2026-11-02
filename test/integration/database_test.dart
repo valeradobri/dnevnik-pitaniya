@@ -163,6 +163,47 @@ void main() {
       expect(cheeseItem.product.name.toLowerCase(), contains('сыр'));
       expect(cheeseItem.product.name.toLowerCase(), isNot(contains('куриное')));
     });
+
+    test('AchievementDao — синхронизация и разблокировка первого достижения', () async {
+      await db.achievementDao.syncAchievements();
+      var achievements = await db.achievementDao.getAchievementsWithStatus();
+      expect(achievements.length, greaterThanOrEqualTo(6));
+
+      // Изначально записей нет — ни одно не открыто
+      final firstEntryAch = achievements.firstWhere((a) => a.achievement.key == 'first_entry');
+      expect(firstEntryAch.isUnlocked, isFalse);
+
+      // Добавляем запись в дневник
+      final today = DateTime.now();
+      await db.diaryDao.insertEntry(
+        DiaryEntriesCompanion.insert(
+          mealType: 'lunch',
+          foodProductId: 1,
+          customName: 'Куриная грудка',
+          grams: 150,
+          calculatedCalories: 165.0,
+          calculatedProtein: 35.0,
+          calculatedFat: 2.0,
+          calculatedCarbs: 0.0,
+          entryDate: today,
+        ),
+      );
+
+      // Синхронизируем
+      await db.achievementDao.syncAchievements();
+      achievements = await db.achievementDao.getAchievementsWithStatus();
+
+      final updatedFirstAch = achievements.firstWhere((a) => a.achievement.key == 'first_entry');
+      expect(updatedFirstAch.isUnlocked, isTrue);
+      expect(updatedFirstAch.currentCount, equals(1));
+      expect(updatedFirstAch.unlockedAt, isNotNull);
+
+      // Проверяем HabitStats
+      final stats = await db.achievementDao.getHabitStats();
+      expect(stats.currentStreak, equals(1));
+      expect(stats.totalActiveDays, equals(1));
+      expect(stats.unlockedAchievementsCount, greaterThanOrEqualTo(1));
+    });
   });
 }
 

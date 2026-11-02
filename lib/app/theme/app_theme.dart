@@ -217,13 +217,41 @@ abstract final class AppTheme {
 
       // ── Chip ──────────────────────────────────────────────────────
       chipTheme: ChipThemeData(
-        backgroundColor:
-            isLight ? AppColors.surfaceVariantLight : AppColors.surfaceVariantDark,
-        selectedColor: AppColors.primaryContainer,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppColors.radiusSmall),
+        color: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return AppColors.primary;
+          }
+          return isLight ? const Color(0xFFF1F5F9) : const Color(0xFF262C36);
+        }),
+        labelStyle: WidgetStateTextStyle.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return AppTypography.textTheme.labelMedium!.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            );
+          }
+          return AppTypography.textTheme.labelMedium!.copyWith(
+            color: isLight ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+            fontWeight: FontWeight.w500,
+          );
+        }),
+        iconTheme: IconThemeData(
+          color: isLight ? const Color(0xFF475569) : const Color(0xFFCBD5E1),
+          size: 16,
         ),
-        labelStyle: AppTypography.textTheme.labelMedium,
+        checkmarkColor: Colors.white,
+        side: WidgetStateBorderSide.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return BorderSide.none;
+          }
+          return BorderSide(
+            color: isLight ? const Color(0xFFE2E8F0) : const Color(0xFF374151),
+            width: 1,
+          );
+        }),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       ),
 

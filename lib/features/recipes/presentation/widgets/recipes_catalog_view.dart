@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/database/app_database.dart';
 import '../screens/recipe_detail_screen.dart';
 import '../screens/create_recipe_screen.dart';
+import '../../../../core/widgets/filter_pill.dart';
 
 class RecipesCatalogView extends ConsumerStatefulWidget {
   const RecipesCatalogView({super.key});
@@ -16,13 +17,13 @@ class _RecipesCatalogViewState extends ConsumerState<RecipesCatalogView> {
   String _selectedCategory = 'all';
   String _query = '';
 
-  final _categories = const [
-    ('all', 'Все'),
-    ('favorites', '★ Избранное'),
-    ('breakfast', 'Завтраки'),
-    ('lunch', 'Обеды'),
-    ('dinner', 'Ужины'),
-    ('snack', 'Перекусы'),
+  final List<(String, String, IconData?)> _categories = const [
+    ('all', 'Все', null),
+    ('favorites', 'Избранное', Icons.star_rounded),
+    ('breakfast', 'Завтраки', null),
+    ('lunch', 'Обеды', null),
+    ('dinner', 'Ужины', null),
+    ('snack', 'Перекусы', null),
   ];
 
   @override
@@ -82,7 +83,7 @@ class _RecipesCatalogViewState extends ConsumerState<RecipesCatalogView> {
           ),
         ),
 
-        // Чипы категорий
+        // Плашки категорий
         SizedBox(
           height: 38,
           child: ListView.separated(
@@ -93,12 +94,13 @@ class _RecipesCatalogViewState extends ConsumerState<RecipesCatalogView> {
             itemBuilder: (context, index) {
               final cat = _categories[index];
               final isSelected = _selectedCategory == cat.$1;
-              return ChoiceChip(
-                label: Text(cat.$2),
-                selected: isSelected,
-                onSelected: (selected) {
-                  if (selected) setState(() => _selectedCategory = cat.$1);
-                },
+              return Center(
+                child: FilterPill(
+                  label: cat.$2,
+                  icon: cat.$3,
+                  isSelected: isSelected,
+                  onTap: () => setState(() => _selectedCategory = cat.$1),
+                ),
               );
             },
           ),

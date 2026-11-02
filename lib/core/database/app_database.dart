@@ -10,6 +10,7 @@ import 'daos/water_dao.dart';
 import 'daos/weight_dao.dart';
 import 'daos/recipe_dao.dart';
 import 'daos/meal_plan_dao.dart';
+import 'daos/achievement_dao.dart';
 
 part 'app_database.g.dart';
 
@@ -123,6 +124,7 @@ class AppDatabase extends _$AppDatabase {
   late final weightDao = WeightDao(this);
   late final recipeDao = RecipeDao(this);
   late final mealPlanDao = MealPlanDao(this);
+  late final achievementDao = AchievementDao(this);
 }
 
 /// Инициализация подключения к SQLite-файлу на устройстве (поддержка Android, iOS, Windows, Web)
@@ -169,5 +171,9 @@ final recipeDaoProvider = Provider<RecipeDao>((ref) {
 
 final mealPlanDaoProvider = Provider<MealPlanDao>((ref) {
   return ref.watch(databaseProvider).mealPlanDao;
+});
+
+final achievementDaoProvider = Provider<AchievementDao>((ref) {
+  return ref.watch(databaseProvider).achievementDao;
 });
 

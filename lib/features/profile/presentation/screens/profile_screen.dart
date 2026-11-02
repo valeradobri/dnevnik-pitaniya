@@ -184,6 +184,11 @@ class ProfileScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           _SettingsTile(
+            icon: Icons.emoji_events_outlined,
+            label: 'Достижения и привычки',
+            onTap: () => context.push('/achievements'),
+          ),
+          _SettingsTile(
             icon: Icons.tune_rounded,
             label: 'Пройти анкету заново',
             onTap: () async {

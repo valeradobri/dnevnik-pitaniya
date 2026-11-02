@@ -30,6 +30,9 @@ void main() {
     expect(find.byType(DnevnikApp), findsOneWidget);
     expect(find.textContaining('👋'), findsOneWidget);
     expect(find.text('Белки'), findsOneWidget);
+    expect(find.textContaining('Новый день заботы о себе'), findsOneWidget);
+
+    await tester.scrollUntilVisible(find.text('Вода за сегодня'), 200);
     expect(find.text('Вода за сегодня'), findsOneWidget);
 
     await testDb.close();

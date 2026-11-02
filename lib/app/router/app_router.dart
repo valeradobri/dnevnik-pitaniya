@@ -18,6 +18,7 @@ import '../../features/food_database/presentation/widgets/food_search_sheet.dart
 import '../../features/food_database/presentation/screens/barcode_scanner_screen.dart';
 import '../../features/water/presentation/widgets/add_water_dialog.dart';
 import '../../features/weight/presentation/widgets/add_weight_dialog.dart';
+import '../../features/gamification/presentation/screens/achievements_screen.dart';
 
 /// Главный навигационный маршрутизатор приложения.
 ///
@@ -97,6 +98,13 @@ GoRouter createRouter(SharedPreferences prefs) {
             ],
           ),
         ],
+      ),
+
+      // ── Достижения и привычки ─────────────────────────────────────
+      GoRoute(
+        path: RouteNames.achievements,
+        name: 'achievements',
+        builder: (context, state) => const AchievementsScreen(),
       ),
     ],
   );
