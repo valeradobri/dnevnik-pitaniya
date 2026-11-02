@@ -6,6 +6,7 @@ import '../../../../core/database/app_database.dart';
 import '../../../../core/widgets/nutri_card.dart';
 import '../../../dashboard/presentation/providers/dashboard_providers.dart';
 import '../../../food_database/presentation/widgets/food_search_sheet.dart';
+import '../../../nutrition_suggestions/presentation/widgets/meal_suggestions_sheet.dart';
 
 class DiaryScreen extends ConsumerStatefulWidget {
   const DiaryScreen({super.key});
@@ -75,6 +76,7 @@ class _DiaryScreenState extends ConsumerState<DiaryScreen> {
 
     final now = DateTime.now();
     final isToday = DateTime(now.year, now.month, now.day) == _selectedDate;
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
@@ -188,6 +190,40 @@ class _DiaryScreenState extends ConsumerState<DiaryScreen> {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 90),
                 children: [
+                  // ── Кнопка «Что скушать в пределах нормы?» ──────────
+                  InkWell(
+                    onTap: () => MealSuggestionsSheet.show(context, date: _selectedDate),
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF064E3B).withValues(alpha: 0.3) : const Color(0xFFECFDF5),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isDark ? const Color(0xFF059669).withValues(alpha: 0.3) : const Color(0xFFA7F3D0),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.auto_awesome_rounded, color: Color(0xFF059669), size: 18),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Не знаете, что съесть? Подобрать под остаток БЖУ',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: isDark ? const Color(0xFFD1FAE5) : const Color(0xFF065F46),
+                              ),
+                            ),
+                          ),
+                          const Icon(Icons.chevron_right_rounded, color: Color(0xFF059669), size: 20),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
                   _DiaryMealSection(
                     title: 'Завтрак',
                     icon: Icons.wb_sunny_rounded,
