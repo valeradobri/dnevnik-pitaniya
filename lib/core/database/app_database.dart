@@ -3,6 +3,7 @@ import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'tables/tables.dart';
 import 'seed/food_seed.dart';
+import 'seed/achievements_seed.dart';
 import 'daos/food_dao.dart';
 import 'daos/diary_dao.dart';
 import 'daos/user_dao.dart';
@@ -65,56 +66,20 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 
-  Future<void> _seedAchievements() async {
-    final achievementsList = [
-      AchievementsCompanion.insert(
-        key: 'first_entry',
-        title: 'Первый шаг',
-        description: 'Добавьте первую запись в дневник питания',
-        iconName: 'star_outline',
-        requiredCount: const Value(1),
-      ),
-      AchievementsCompanion.insert(
-        key: 'three_days_streak',
-        title: '3 дня подряд',
-        description: 'Ведите дневник 3 дня подряд',
-        iconName: 'local_fire_department',
-        requiredCount: const Value(3),
-      ),
-      AchievementsCompanion.insert(
-        key: 'week_streak',
-        title: 'Неделя осознанности',
-        description: 'Ведите дневник 7 дней подряд',
-        iconName: 'emoji_events',
-        requiredCount: const Value(7),
-      ),
-      AchievementsCompanion.insert(
-        key: 'water_balance',
-        title: 'Водный баланс',
-        description: 'Выполните норму воды 5 дней',
-        iconName: 'water_drop',
-        requiredCount: const Value(5),
-      ),
-      AchievementsCompanion.insert(
-        key: 'weight_first',
-        title: 'На весах',
-        description: 'Добавьте первое взвешивание',
-        iconName: 'monitor_weight',
-        requiredCount: const Value(1),
-      ),
-      AchievementsCompanion.insert(
-        key: 'month_streak',
-        title: 'Месяц привычки',
-        description: 'Ведите дневник 30 дней подряд',
-        iconName: 'workspace_premium',
-        requiredCount: const Value(30),
-      ),
-    ];
-
-    await batch((b) {
-      b.insertAllOnConflictUpdate(achievements, achievementsList);
-    });
+  Future<void> seedAchievements() async {
+    final existing = await select(achievements).get();
+    final existingKeys = existing.map((a) => a.key).toSet();
+    final toInsert = initialAchievements
+        .where((a) => !existingKeys.contains(a.key.value))
+        .toList();
+    if (toInsert.isNotEmpty) {
+      await batch((b) {
+        b.insertAll(achievements, toInsert);
+      });
+    }
   }
+
+  Future<void> _seedAchievements() => seedAchievements();
 
   // ─── Доступ к DAOs ───────────────────────────────────────────────────
   late final foodDao = FoodDao(this);

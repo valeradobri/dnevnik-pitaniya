@@ -18,19 +18,123 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
   IconData _getIcon(String iconName) {
     switch (iconName) {
       case 'star_outline':
+        return Icons.star_outline_rounded;
+      case 'star':
         return Icons.star_rounded;
       case 'local_fire_department':
         return Icons.local_fire_department_rounded;
       case 'emoji_events':
         return Icons.emoji_events_rounded;
-      case 'water_drop':
-        return Icons.water_drop_rounded;
-      case 'monitor_weight':
-        return Icons.monitor_weight_rounded;
+      case 'psychology':
+        return Icons.psychology_rounded;
       case 'workspace_premium':
         return Icons.workspace_premium_rounded;
+      case 'military_tech':
+        return Icons.military_tech_rounded;
+      case 'diamond':
+        return Icons.diamond_rounded;
+      case 'hotel_class':
+        return Icons.hotel_class_rounded;
+      case 'auto_awesome':
+        return Icons.auto_awesome_rounded;
+      case 'weekend':
+        return Icons.weekend_rounded;
+      case 'done_all':
+        return Icons.done_all_rounded;
+      case 'fact_check':
+        return Icons.fact_check_rounded;
+      case 'wb_sunny':
+        return Icons.wb_sunny_rounded;
+      case 'nights_stay':
+        return Icons.nights_stay_rounded;
+      case 'restaurant':
+        return Icons.restaurant_rounded;
+      case 'fastfood':
+        return Icons.fastfood_rounded;
+      case 'ramen_dining':
+        return Icons.ramen_dining_rounded;
+      case 'menu_book':
+        return Icons.menu_book_rounded;
+      case 'history_edu':
+        return Icons.history_edu_rounded;
+      case 'apple':
+        return Icons.lunch_dining_rounded;
+      case 'energy_savings_leaf':
+        return Icons.energy_savings_leaf_rounded;
+      case 'water_drop':
+        return Icons.water_drop_rounded;
+      case 'local_drink':
+        return Icons.local_drink_rounded;
+      case 'check_circle':
+        return Icons.check_circle_rounded;
+      case 'waves':
+        return Icons.waves_rounded;
+      case 'opacity':
+        return Icons.opacity_rounded;
+      case 'water':
+        return Icons.water_rounded;
+      case 'bubble_chart':
+        return Icons.bubble_chart_rounded;
+      case 'tsunami':
+        return Icons.tsunami_rounded;
+      case 'wb_twilight':
+        return Icons.wb_twilight_rounded;
+      case 'fitness_center':
+        return Icons.fitness_center_rounded;
+      case 'sports_gymnastics':
+        return Icons.sports_gymnastics_rounded;
+      case 'grass':
+        return Icons.grass_rounded;
+      case 'spa':
+        return Icons.spa_rounded;
+      case 'eco':
+        return Icons.eco_rounded;
+      case 'nature_people':
+        return Icons.nature_people_rounded;
+      case 'cherry':
+        return Icons.local_florist_rounded;
+      case 'phishing':
+        return Icons.set_meal_rounded;
+      case 'gps_fixed':
+        return Icons.gps_fixed_rounded;
+      case 'track_changes':
+        return Icons.track_changes_rounded;
+      case 'palette':
+        return Icons.palette_rounded;
+      case 'cake':
+        return Icons.cake_rounded;
       case 'restaurant_menu':
         return Icons.restaurant_menu_rounded;
+      case 'kitchen':
+        return Icons.kitchen_rounded;
+      case 'dinner_dining':
+        return Icons.dinner_dining_rounded;
+      case 'groups':
+        return Icons.groups_rounded;
+      case 'soup_kitchen':
+        return Icons.soup_kitchen_rounded;
+      case 'bookmark':
+        return Icons.bookmark_rounded;
+      case 'bookmarks':
+        return Icons.bookmarks_rounded;
+      case 'qr_code_scanner':
+        return Icons.qr_code_scanner_rounded;
+      case 'barcode_reader':
+        return Icons.document_scanner_rounded;
+      case 'add_circle_outline':
+        return Icons.add_circle_outline_rounded;
+      case 'playlist_add':
+        return Icons.playlist_add_rounded;
+      case 'monitor_weight':
+        return Icons.monitor_weight_rounded;
+      case 'show_chart':
+        return Icons.show_chart_rounded;
+      case 'timeline':
+        return Icons.timeline_rounded;
+      case 'trending_down':
+        return Icons.trending_down_rounded;
+      case 'person':
+        return Icons.person_rounded;
       default:
         return Icons.military_tech_rounded;
     }
