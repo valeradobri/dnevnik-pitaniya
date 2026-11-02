@@ -156,28 +156,32 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
               const SizedBox(height: 20),
 
               // ── Фильтры (Все / Открытые / В процессе) ─────────────────
-              Row(
-                children: [
-                  FilterPill(
-                    label: 'Все ($totalCount)',
-                    isSelected: _filter == 'all',
-                    onTap: () => setState(() => _filter = 'all'),
-                  ),
-                  const SizedBox(width: 8),
-                  FilterPill(
-                    label: 'Открытые ($unlockedCount)',
-                    icon: Icons.check_circle_rounded,
-                    isSelected: _filter == 'unlocked',
-                    onTap: () => setState(() => _filter = 'unlocked'),
-                  ),
-                  const SizedBox(width: 8),
-                  FilterPill(
-                    label: 'В процессе (${totalCount - unlockedCount})',
-                    icon: Icons.timelapse_rounded,
-                    isSelected: _filter == 'in_progress',
-                    onTap: () => setState(() => _filter = 'in_progress'),
-                  ),
-                ],
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                child: Row(
+                  children: [
+                    FilterPill(
+                      label: 'Все ($totalCount)',
+                      isSelected: _filter == 'all',
+                      onTap: () => setState(() => _filter = 'all'),
+                    ),
+                    const SizedBox(width: 8),
+                    FilterPill(
+                      label: 'Открытые ($unlockedCount)',
+                      icon: Icons.check_circle_rounded,
+                      isSelected: _filter == 'unlocked',
+                      onTap: () => setState(() => _filter = 'unlocked'),
+                    ),
+                    const SizedBox(width: 8),
+                    FilterPill(
+                      label: 'В процессе (${totalCount - unlockedCount})',
+                      icon: Icons.timelapse_rounded,
+                      isSelected: _filter == 'in_progress',
+                      onTap: () => setState(() => _filter = 'in_progress'),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 16),
 
