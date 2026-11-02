@@ -268,13 +268,19 @@ class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
             const SizedBox(height: 14),
             DropdownButtonFormField<String>(
               initialValue: _category,
+              isExpanded: true,
               decoration: InputDecoration(
                 labelText: 'Категория',
                 filled: true,
                 fillColor: theme.colorScheme.surfaceContainerLowest,
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
               ),
-              items: _categories.map((c) => DropdownMenuItem(value: c.$1, child: Text(c.$2))).toList(),
+              items: _categories
+                  .map((c) => DropdownMenuItem(
+                        value: c.$1,
+                        child: Text(c.$2, overflow: TextOverflow.ellipsis),
+                      ))
+                  .toList(),
               onChanged: (val) => setState(() => _category = val ?? 'lunch'),
             ),
             const SizedBox(height: 24),

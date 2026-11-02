@@ -37,6 +37,7 @@ class _CreateFoodDialogState extends ConsumerState<CreateFoodDialog> {
     ('dairy', 'Молочные продукты'),
     ('vegetables', 'Овощи и зелень'),
     ('fruits', 'Фрукты и ягоды'),
+    ('sweets', 'Сладкое и десерты'),
     ('nuts', 'Орехи и семена'),
     ('bakery', 'Выпечка и хлеб'),
     ('drinks', 'Напитки'),
@@ -105,6 +106,7 @@ class _CreateFoodDialogState extends ConsumerState<CreateFoodDialog> {
     final theme = Theme.of(context);
 
     return AlertDialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       title: Row(
         children: [
@@ -117,7 +119,7 @@ class _CreateFoodDialogState extends ConsumerState<CreateFoodDialog> {
             child: Icon(Icons.add_circle_outline_rounded, color: theme.colorScheme.primary),
           ),
           const SizedBox(width: 12),
-          const Text('Свой продукт'),
+          const Expanded(child: Text('Свой продукт')),
         ],
       ),
       content: Form(
@@ -189,14 +191,22 @@ class _CreateFoodDialogState extends ConsumerState<CreateFoodDialog> {
               // Категория
               DropdownButtonFormField<String>(
                 initialValue: _category,
+                isExpanded: true,
                 decoration: InputDecoration(
                   labelText: 'Категория',
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                   filled: true,
                   fillColor: theme.colorScheme.surfaceContainerLowest,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
                 ),
                 items: _categories
-                    .map((c) => DropdownMenuItem(value: c.$1, child: Text(c.$2)))
+                    .map((c) => DropdownMenuItem(
+                          value: c.$1,
+                          child: Text(
+                            c.$2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ))
                     .toList(),
                 onChanged: (val) {
                   if (val != null) setState(() => _category = val);
@@ -234,6 +244,7 @@ class _CreateFoodDialogState extends ConsumerState<CreateFoodDialog> {
                       decoration: InputDecoration(
                         labelText: 'Белки',
                         suffixText: 'г',
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
                         filled: true,
                         fillColor: theme.colorScheme.surfaceContainerLowest,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
@@ -249,6 +260,7 @@ class _CreateFoodDialogState extends ConsumerState<CreateFoodDialog> {
                       decoration: InputDecoration(
                         labelText: 'Жиры',
                         suffixText: 'г',
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
                         filled: true,
                         fillColor: theme.colorScheme.surfaceContainerLowest,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
@@ -264,6 +276,7 @@ class _CreateFoodDialogState extends ConsumerState<CreateFoodDialog> {
                       decoration: InputDecoration(
                         labelText: 'Углеводы',
                         suffixText: 'г',
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
                         filled: true,
                         fillColor: theme.colorScheme.surfaceContainerLowest,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
