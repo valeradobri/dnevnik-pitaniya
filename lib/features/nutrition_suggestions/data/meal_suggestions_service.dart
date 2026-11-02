@@ -181,6 +181,75 @@ class MealSuggestionsService {
       }
     }
 
+    // ── 4. Сладкое и десерты (вкусняшки без чувства вины) ──────────────
+    final sweetFoods = foods.where((f) {
+      final n = f.name.toLowerCase();
+      return f.category == 'sweets' ||
+          n.contains('мармелад') ||
+          n.contains('шоколад') ||
+          n.contains('зефир') ||
+          n.contains('пастила') ||
+          n.contains('печенье') ||
+          n.contains('батончик') ||
+          n.contains('мёд') ||
+          n.contains('морожен') ||
+          n.contains('халва') ||
+          n.contains('конфет') ||
+          n.contains('курага') ||
+          n.contains('чернослив');
+    }).toList();
+
+    for (final food in sweetFoods) {
+      // Подбираем порцию десерта в разумных границах (например, 25-50г для шоколада/мармелада)
+      double portionGrams = 40.0;
+      final n = food.name.toLowerCase();
+      if (n.contains('шоколад')) {
+        portionGrams = 25.0; // 3-4 дольки
+      } else if (n.contains('мёд')) {
+        portionGrams = 20.0; // 1 ложка
+      } else if (n.contains('печенье') || n.contains('батончик')) {
+        portionGrams = 45.0; // 1 штука
+      } else if (n.contains('морожен')) {
+        portionGrams = 75.0; // 1 порция
+      }
+
+      final nut = NutritionCalculator.calculateForGrams(
+        grams: portionGrams,
+        caloriesPer100g: food.caloriesPer100g,
+        proteinPer100g: food.proteinPer100g,
+        fatPer100g: food.fatPer100g,
+        carbsPer100g: food.carbsPer100g,
+      );
+
+      if (budget.fitsWithinCorridor(
+        itemCalories: nut.calories,
+        itemProtein: nut.protein,
+        itemFat: nut.fat,
+        itemCarbs: nut.carbs,
+        toleranceGrams: 10.0,
+        toleranceCals: 150.0,
+      )) {
+        suggestions.add(
+          MealSuggestion(
+            id: 'sweet_${food.id}',
+            title: food.name,
+            subtitle: 'Осознанная порция ${portionGrams.round()} г',
+            categoryTag: 'sweets',
+            categoryLabel: 'Вкусняшка 🍬',
+            icon: Icons.cake_rounded,
+            suggestedGrams: portionGrams,
+            calories: nut.calories,
+            protein: nut.protein,
+            fat: nut.fat,
+            carbs: nut.carbs,
+            reason: 'Любимый десерт без чувства вины: аккуратно укладывается в остаток калорий дня',
+            defaultMealType: 'snack',
+            product: food,
+          ),
+        );
+      }
+    }
+
     // Сортировка: приоритет отдается тем вариантам, которые лучше всего закрывают ведущий дефицит
     final dominant = budget.dominantNeed;
     suggestions.sort((a, b) {

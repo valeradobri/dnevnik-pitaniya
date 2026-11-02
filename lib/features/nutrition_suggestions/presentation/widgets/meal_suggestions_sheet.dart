@@ -25,6 +25,7 @@ class MealSuggestionsSheet extends ConsumerStatefulWidget {
   }) {
     return showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => MealSuggestionsSheet(
@@ -300,6 +301,12 @@ class _MealSuggestionsSheetState extends ConsumerState<MealSuggestionsSheet> {
                   label: 'Рецепты 👨‍🍳',
                   isSelected: _categoryFilter == 'recipe',
                   onTap: () => setState(() => _categoryFilter = 'recipe'),
+                ),
+                const SizedBox(width: 8),
+                FilterPill(
+                  label: 'Вкусняшки 🍬',
+                  isSelected: _categoryFilter == 'sweets',
+                  onTap: () => setState(() => _categoryFilter = 'sweets'),
                 ),
                 const SizedBox(width: 8),
                 FilterPill(

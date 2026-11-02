@@ -60,11 +60,20 @@ class AppDatabase extends _$AppDatabase {
     await recipeDao.seedInitialRecipes();
   }
 
-  Future<void> _seedFoodProducts() async {
-    await batch((b) {
-      b.insertAll(foodProducts, initialFoodProducts);
-    });
+  Future<void> seedFoodProducts() async {
+    final existing = await select(foodProducts).get();
+    final existingNames = existing.map((f) => f.name.toLowerCase()).toSet();
+    final toInsert = initialFoodProducts
+        .where((f) => !existingNames.contains(f.name.value.toLowerCase()))
+        .toList();
+    if (toInsert.isNotEmpty) {
+      await batch((b) {
+        b.insertAll(foodProducts, toInsert);
+      });
+    }
   }
+
+  Future<void> _seedFoodProducts() => seedFoodProducts();
 
   Future<void> seedAchievements() async {
     final existing = await select(achievements).get();

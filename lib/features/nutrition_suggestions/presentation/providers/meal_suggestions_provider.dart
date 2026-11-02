@@ -46,6 +46,9 @@ final smartMealSuggestionsProvider =
   final foodDao = ref.watch(foodDaoProvider);
   final recipeDao = ref.watch(recipeDaoProvider);
 
+  // Гарантируем сидирование новых продуктов (десерты, вкусняшки)
+  await foodDao.db.seedFoodProducts();
+
   // Получаем продукты и детальные рецепты
   final allFoods = await foodDao.getAllFoods();
   final allRecipes = await recipeDao.watchAllRecipes().first;

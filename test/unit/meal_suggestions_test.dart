@@ -131,6 +131,19 @@ void main() {
         isFavorite: false,
         createdAt: DateTime(2026, 1, 1),
       ),
+      FoodProduct(
+        id: 5,
+        name: 'Мармелад желейный фруктовый',
+        category: 'sweets',
+        caloriesPer100g: 321,
+        proteinPer100g: 1.0,
+        fatPer100g: 0.1,
+        carbsPer100g: 79.0,
+        servingSizeG: 40,
+        sourceType: 'base',
+        isFavorite: true,
+        createdAt: DateTime(2026, 1, 1),
+      ),
     ];
 
     test('При дефиците белка рекомендует белковые варианты с рассчитанной порцией', () {
@@ -157,6 +170,31 @@ void main() {
       expect(chicken.categoryTag, equals('protein'));
       expect(chicken.protein, greaterThanOrEqualTo(20));
       expect(chicken.suggestedGrams, greaterThanOrEqualTo(90));
+    });
+
+    test('При наличии остатка калорий предлагает осознанные вкусняшки (мармелад)', () {
+      const budget = RemainingBudget(
+        targetCalories: 2000,
+        targetProtein: 120,
+        targetFat: 60,
+        targetCarbs: 220,
+        consumedCalories: 1500,
+        consumedProtein: 90,
+        consumedFat: 45,
+        consumedCarbs: 150,
+      );
+
+      final suggestions = service.generateSuggestions(
+        budget: budget,
+        foods: testFoods,
+        recipes: [],
+        preferredMealType: 'snack',
+      );
+
+      final sweets = suggestions.where((s) => s.categoryTag == 'sweets').toList();
+      expect(sweets, isNotEmpty);
+      expect(sweets.any((s) => s.title.contains('Мармелад')), isTrue);
+      expect(sweets.first.suggestedGrams, equals(40));
     });
 
     test('При минимальном остатке калорий (<60 ккал) предлагает травяной чай или огурцы', () {
