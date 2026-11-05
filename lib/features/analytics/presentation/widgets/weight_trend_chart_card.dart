@@ -98,35 +98,40 @@ class WeightTrendChartCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Container(
-                    width: 38,
-                    height: 38,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF6366F1).withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(12),
+              Expanded(
+                child: Row(
+                  children: [
+                    Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF6366F1).withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(Icons.monitor_weight_rounded, color: Color(0xFF6366F1), size: 22),
                     ),
-                    child: const Icon(Icons.monitor_weight_rounded, color: Color(0xFF6366F1), size: 22),
-                  ),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Динамика веса',
-                        style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Динамика веса',
+                            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            'Цель: ${targetWeight.toStringAsFixed(1)} кг',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
                       ),
-                      Text(
-                        'Цель: ${targetWeight.toStringAsFixed(1)} кг',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
@@ -146,24 +151,36 @@ class WeightTrendChartCard extends StatelessWidget {
           const SizedBox(height: 12),
 
           // Пояснение про тренд и воду
-          Row(
+          Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 14,
+            runSpacing: 4,
             children: [
-              Container(width: 12, height: 3, color: AppColors.primary),
-              const SizedBox(width: 6),
-              Text(
-                'Сглаженный тренд (MA)',
-                style: theme.textTheme.bodySmall?.copyWith(fontSize: 11, color: theme.colorScheme.onSurfaceVariant),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(width: 12, height: 3, color: AppColors.primary),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Сглаженный тренд (MA)',
+                    style: theme.textTheme.bodySmall?.copyWith(fontSize: 11, color: theme.colorScheme.onSurfaceVariant),
+                  ),
+                ],
               ),
-              const SizedBox(width: 14),
-              Container(
-                width: 6,
-                height: 6,
-                decoration: const BoxDecoration(color: Color(0xFF818CF8), shape: BoxShape.circle),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                'Взвешивания',
-                style: theme.textTheme.bodySmall?.copyWith(fontSize: 11, color: theme.colorScheme.onSurfaceVariant),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 6,
+                    height: 6,
+                    decoration: const BoxDecoration(color: Color(0xFF818CF8), shape: BoxShape.circle),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Взвешивания',
+                    style: theme.textTheme.bodySmall?.copyWith(fontSize: 11, color: theme.colorScheme.onSurfaceVariant),
+                  ),
+                ],
               ),
             ],
           ),

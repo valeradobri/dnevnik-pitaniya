@@ -97,7 +97,9 @@ class _AddWeightDialogState extends ConsumerState<AddWeightDialog> {
             child: const Icon(Icons.monitor_weight_rounded, color: Color(0xFF6366F1)),
           ),
           const SizedBox(width: 12),
-          const Text('Внести вес'),
+          const Expanded(
+            child: Text('Внести вес'),
+          ),
         ],
       ),
       content: Form(

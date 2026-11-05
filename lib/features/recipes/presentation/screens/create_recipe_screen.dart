@@ -289,9 +289,11 @@ class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Ингредиенты (${_ingredients.length})',
-                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                Expanded(
+                  child: Text(
+                    'Ингредиенты (${_ingredients.length})',
+                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                  ),
                 ),
                 TextButton.icon(
                   onPressed: _addIngredient,
@@ -350,7 +352,10 @@ class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Всего: ${totalCals.round()} ккал'),
+                  Expanded(
+                    child: Text('Всего: ${totalCals.round()} ккал'),
+                  ),
+                  const SizedBox(width: 8),
                   Text(
                     '~ $calsPerServing ккал / порция',
                     style: theme.textTheme.titleSmall?.copyWith(

@@ -51,6 +51,12 @@ class AppDatabase extends _$AppDatabase {
         onUpgrade: (m, from, to) async {
           // Место для будущих миграций
         },
+        beforeOpen: (details) async {
+          if (!details.wasCreated) {
+            await _seedFoodProducts();
+            await recipeDao.seedInitialRecipes();
+          }
+        },
       );
 
   // ─── Seed начальных данных ────────────────────────────────────────────

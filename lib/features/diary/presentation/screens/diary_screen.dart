@@ -154,30 +154,34 @@ class _DiaryScreenState extends ConsumerState<DiaryScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${totals.calories.round()} / $targetCals ккал',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.primary,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${totals.calories.round()} / $targetCals ккал',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.primary,
+                          ),
                         ),
-                      ),
-                      Text(
-                        'Съедено за день',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
+                        Text(
+                          'Съедено за день',
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
+                  const SizedBox(width: 8),
                   Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       _MacroPill(label: 'Б', value: totals.protein, color: AppColors.protein),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 6),
                       _MacroPill(label: 'Ж', value: totals.fat, color: AppColors.fat),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 6),
                       _MacroPill(label: 'У', value: totals.carbs, color: AppColors.carbs),
                     ],
                   ),
@@ -438,6 +442,7 @@ class _DiaryMealSection extends ConsumerWidget {
                           ],
                         ),
                       ),
+                      const SizedBox(width: 8),
                       Text(
                         '${entry.calculatedCalories.round()} ккал',
                         style: theme.textTheme.titleSmall?.copyWith(

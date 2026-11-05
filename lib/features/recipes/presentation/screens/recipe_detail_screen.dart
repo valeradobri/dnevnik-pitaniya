@@ -208,6 +208,21 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Изображение блюда (если есть)
+                if (r.imageUrl != null && r.imageUrl!.isNotEmpty) ...[
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(24),
+                    child: Image.network(
+                      r.imageUrl!,
+                      height: 200,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (ctx, err, stack) => const SizedBox.shrink(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
                 // Шапка рецепта
                 Container(
                   padding: const EdgeInsets.all(20),
@@ -287,12 +302,14 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
 
                 // Интерактивный переключатель порций
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'Количество порций',
-                      style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                    Expanded(
+                      child: Text(
+                        'Количество порций',
+                        style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                      ),
                     ),
+                    const SizedBox(width: 8),
                     Container(
                       decoration: BoxDecoration(
                         color: theme.colorScheme.surfaceContainerLowest,
@@ -338,9 +355,14 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                   child: Column(
                     children: [
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Пищевая ценность (на $_currentServings ${_servingWord(_currentServings)}):'),
+                          Expanded(
+                            child: Text(
+                              'Пищевая ценность (на $_currentServings ${_servingWord(_currentServings)}):',
+                              style: theme.textTheme.bodyMedium,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
                           Text(
                             '${nutrients.calories.round()} ккал',
                             style: theme.textTheme.titleMedium?.copyWith(
@@ -352,11 +374,16 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                       ),
                       const Divider(height: 20),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          _MacroStat(label: 'Белки', grams: nutrients.protein, color: AppColors.protein),
-                          _MacroStat(label: 'Жиры', grams: nutrients.fat, color: AppColors.fat),
-                          _MacroStat(label: 'Углеводы', grams: nutrients.carbs, color: AppColors.carbs),
+                          Expanded(
+                            child: _MacroStat(label: 'Белки', grams: nutrients.protein, color: AppColors.protein),
+                          ),
+                          Expanded(
+                            child: _MacroStat(label: 'Жиры', grams: nutrients.fat, color: AppColors.fat),
+                          ),
+                          Expanded(
+                            child: _MacroStat(label: 'Углеводы', grams: nutrients.carbs, color: AppColors.carbs),
+                          ),
                         ],
                       ),
                     ],
@@ -489,9 +516,12 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                   child: FilledButton.icon(
                     onPressed: () => _addPortionToDiary(details),
                     icon: const Icon(Icons.add_task_rounded),
-                    label: Text(
-                      'Добавить в дневник ($_currentServings ${_servingWord(_currentServings)})',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    label: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        'Добавить в дневник ($_currentServings ${_servingWord(_currentServings)})',
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
                     ),
                     style: FilledButton.styleFrom(
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -547,12 +577,18 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
     switch (cat) {
       case 'breakfast':
         return 'Завтрак';
+      case 'soup':
+        return 'Суп';
       case 'lunch':
         return 'Обед';
       case 'dinner':
         return 'Ужин';
+      case 'salad':
+        return 'Салат';
       case 'snack':
         return 'Перекус';
+      case 'dessert':
+        return 'Десерт';
       default:
         return 'Блюдо';
     }

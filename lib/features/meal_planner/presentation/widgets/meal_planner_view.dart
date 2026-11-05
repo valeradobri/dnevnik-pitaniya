@@ -221,7 +221,6 @@ class _MealPlannerViewState extends ConsumerState<MealPlannerView> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: List.generate(7, (index) {
                 final isSelected = _selectedDayOffset == index;
                 final dayDate = _weekStart.add(Duration(days: index));
@@ -229,44 +228,49 @@ class _MealPlannerViewState extends ConsumerState<MealPlannerView> {
                     DateTime.now().month == dayDate.month &&
                     DateTime.now().year == dayDate.year;
 
-                return InkWell(
-                  onTap: () => setState(() => _selectedDayOffset = index),
-                  borderRadius: BorderRadius.circular(14),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? theme.colorScheme.primary
-                          : isToday
-                              ? theme.colorScheme.primaryContainer.withValues(alpha: 0.5)
-                              : theme.colorScheme.surfaceContainerLowest,
+                return Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 2),
+                    child: InkWell(
+                      onTap: () => setState(() => _selectedDayOffset = index),
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: isSelected
-                            ? theme.colorScheme.primary
-                            : theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? theme.colorScheme.primary
+                              : isToday
+                                  ? theme.colorScheme.primaryContainer.withValues(alpha: 0.5)
+                                  : theme.colorScheme.surfaceContainerLowest,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: isSelected
+                                ? theme.colorScheme.primary
+                                : theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              _days[index],
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: isSelected ? Colors.white : theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '${dayDate.day}',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: isSelected ? Colors.white : theme.colorScheme.onSurface,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    child: Column(
-                      children: [
-                        Text(
-                          _days[index],
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: isSelected ? Colors.white : theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '${dayDate.day}',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: isSelected ? Colors.white : theme.colorScheme.onSurface,
-                          ),
-                        ),
-                      ],
                     ),
                   ),
                 );
@@ -317,11 +321,12 @@ class _MealPlannerViewState extends ConsumerState<MealPlannerView> {
                                 child: Icon(mt.$3, color: mt.$4, size: 20),
                               ),
                               const SizedBox(width: 10),
-                              Text(
-                                mt.$2,
-                                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                              Expanded(
+                                child: Text(
+                                  mt.$2,
+                                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                                ),
                               ),
-                              const Spacer(),
                               IconButton(
                                 icon: const Icon(Icons.add_rounded),
                                 color: theme.colorScheme.primary,

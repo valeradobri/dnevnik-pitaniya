@@ -499,13 +499,18 @@ class _ServingSizeSheetState extends ConsumerState<ServingSizeSheet> {
                   ),
                 ),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _MacroStat(label: 'Белки', value: nutrient.protein, color: AppColors.protein),
+                    Expanded(
+                      child: _MacroStat(label: 'Белки', value: nutrient.protein, color: AppColors.protein),
+                    ),
                     Container(width: 1, height: 28, color: theme.colorScheme.outlineVariant),
-                    _MacroStat(label: 'Жиры', value: nutrient.fat, color: AppColors.fat),
+                    Expanded(
+                      child: _MacroStat(label: 'Жиры', value: nutrient.fat, color: AppColors.fat),
+                    ),
                     Container(width: 1, height: 28, color: theme.colorScheme.outlineVariant),
-                    _MacroStat(label: 'Углеводы', value: nutrient.carbs, color: AppColors.carbs),
+                    Expanded(
+                      child: _MacroStat(label: 'Углеводы', value: nutrient.carbs, color: AppColors.carbs),
+                    ),
                   ],
                 ),
               ),
@@ -625,11 +630,14 @@ class _ServingSizeSheetState extends ConsumerState<ServingSizeSheet> {
                           height: 20,
                           child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                         )
-                      : Text(
-                          _supportsCooking && _isCooked
-                              ? 'Добавить готовую порцию (${_grams.toInt()} г)'
-                              : 'Добавить в дневник (${_grams.toInt()} г)',
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      : FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            _supportsCooking && _isCooked
+                                ? 'Добавить готовую порцию (${_grams.toInt()} г)'
+                                : 'Добавить в дневник (${_grams.toInt()} г)',
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          ),
                         ),
                 ),
               ),

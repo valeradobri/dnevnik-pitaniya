@@ -49,30 +49,36 @@ class RemainingMacrosCard extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF059669).withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(10),
+              Expanded(
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF059669).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.lightbulb_rounded,
+                        color: Color(0xFF059669),
+                        size: 20,
+                      ),
                     ),
-                    child: const Icon(
-                      Icons.lightbulb_rounded,
-                      color: Color(0xFF059669),
-                      size: 20,
+                    const SizedBox(width: 10),
+                    Flexible(
+                      child: Text(
+                        'Остаток на сегодня',
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    'Остаток на сегодня',
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
@@ -100,24 +106,29 @@ class RemainingMacrosCard extends ConsumerWidget {
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _MacroRemainingBadge(
-                  label: 'Белки',
-                  grams: budget.remainingProtein,
-                  color: AppColors.protein,
+                Expanded(
+                  child: _MacroRemainingBadge(
+                    label: 'Белки',
+                    grams: budget.remainingProtein,
+                    color: AppColors.protein,
+                  ),
                 ),
                 Container(width: 1, height: 24, color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
-                _MacroRemainingBadge(
-                  label: 'Жиры',
-                  grams: budget.remainingFat,
-                  color: AppColors.fat,
+                Expanded(
+                  child: _MacroRemainingBadge(
+                    label: 'Жиры',
+                    grams: budget.remainingFat,
+                    color: AppColors.fat,
+                  ),
                 ),
                 Container(width: 1, height: 24, color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
-                _MacroRemainingBadge(
-                  label: 'Углеводы',
-                  grams: budget.remainingCarbs,
-                  color: AppColors.carbs,
+                Expanded(
+                  child: _MacroRemainingBadge(
+                    label: 'Углеводы',
+                    grams: budget.remainingCarbs,
+                    color: AppColors.carbs,
+                  ),
                 ),
               ],
             ),

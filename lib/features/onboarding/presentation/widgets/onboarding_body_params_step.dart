@@ -192,10 +192,13 @@ class _ParameterSliderCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                title,
-                style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+              Expanded(
+                child: Text(
+                  title,
+                  style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+                ),
               ),
+              const SizedBox(width: 8),
               RichText(
                 text: TextSpan(
                   children: [

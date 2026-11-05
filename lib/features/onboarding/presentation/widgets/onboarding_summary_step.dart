@@ -89,18 +89,21 @@ class OnboardingSummaryStep extends ConsumerWidget {
                 const SizedBox(height: 14),
                 // BMR и TDEE бейджи
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    _MiniStatBadge(
-                      label: 'Базовый метаболизм (BMR)',
-                      value: '$bmr ккал',
-                      tooltip: 'Энергия на дыхание и работу органов в покое',
+                    Expanded(
+                      child: _MiniStatBadge(
+                        label: 'Базовый метаболизм (BMR)',
+                        value: '$bmr ккал',
+                        tooltip: 'Энергия на дыхание и работу органов в покое',
+                      ),
                     ),
                     Container(width: 1, height: 28, color: theme.colorScheme.outlineVariant),
-                    _MiniStatBadge(
-                      label: 'Расход с активностью (TDEE)',
-                      value: '$tdee ккал',
-                      tooltip: 'Полный расход энергии за сутки',
+                    Expanded(
+                      child: _MiniStatBadge(
+                        label: 'Расход с активностью (TDEE)',
+                        value: '$tdee ккал',
+                        tooltip: 'Полный расход энергии за сутки',
+                      ),
                     ),
                   ],
                 ),

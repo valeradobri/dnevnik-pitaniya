@@ -217,27 +217,34 @@ class _MealSuggestionsSheetState extends ConsumerState<MealSuggestionsSheet> {
                 ),
               ),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _BudgetStatItem(
-                    label: 'Остаток калорий',
-                    value: '${budget.remainingCalories.round()} ккал',
-                    color: theme.colorScheme.primary,
+                  Expanded(
+                    child: _BudgetStatItem(
+                      label: 'Калории',
+                      value: '${budget.remainingCalories.round()} ккал',
+                      color: theme.colorScheme.primary,
+                    ),
                   ),
-                  _BudgetStatItem(
-                    label: 'Белки',
-                    value: '${budget.remainingProtein.round()} г',
-                    color: AppColors.protein,
+                  Expanded(
+                    child: _BudgetStatItem(
+                      label: 'Белки',
+                      value: '${budget.remainingProtein.round()} г',
+                      color: AppColors.protein,
+                    ),
                   ),
-                  _BudgetStatItem(
-                    label: 'Жиры',
-                    value: '${budget.remainingFat.round()} г',
-                    color: AppColors.fat,
+                  Expanded(
+                    child: _BudgetStatItem(
+                      label: 'Жиры',
+                      value: '${budget.remainingFat.round()} г',
+                      color: AppColors.fat,
+                    ),
                   ),
-                  _BudgetStatItem(
-                    label: 'Углеводы',
-                    value: '${budget.remainingCarbs.round()} г',
-                    color: AppColors.carbs,
+                  Expanded(
+                    child: _BudgetStatItem(
+                      label: 'Углеводы',
+                      value: '${budget.remainingCarbs.round()} г',
+                      color: AppColors.carbs,
+                    ),
                   ),
                 ],
               ),
@@ -407,17 +414,22 @@ class _BudgetStatItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(
-          value,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 14,
-            color: color,
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            value,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+              color: color,
+            ),
           ),
         ),
         const SizedBox(height: 2),
         Text(
           label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: TextStyle(
             fontSize: 11,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -539,38 +551,55 @@ class _SuggestionCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
             ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  '${item.calories.round()} ккал',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                Expanded(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      '${item.calories.round()} ккал',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                      ),
+                    ),
                   ),
                 ),
-                Text(
-                  'Б: ${item.protein.toStringAsFixed(1)}г',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 12,
-                    color: AppColors.protein,
+                const SizedBox(width: 4),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    'Б: ${item.protein.toStringAsFixed(1)}г',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
+                      color: AppColors.protein,
+                    ),
                   ),
                 ),
-                Text(
-                  'Ж: ${item.fat.toStringAsFixed(1)}г',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 12,
-                    color: AppColors.fat,
+                const SizedBox(width: 8),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    'Ж: ${item.fat.toStringAsFixed(1)}г',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
+                      color: AppColors.fat,
+                    ),
                   ),
                 ),
-                Text(
-                  'У: ${item.carbs.toStringAsFixed(1)}г',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 12,
-                    color: AppColors.carbs,
+                const SizedBox(width: 8),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    'У: ${item.carbs.toStringAsFixed(1)}г',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
+                      color: AppColors.carbs,
+                    ),
                   ),
                 ),
               ],

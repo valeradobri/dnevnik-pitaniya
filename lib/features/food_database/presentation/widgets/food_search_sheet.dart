@@ -350,11 +350,14 @@ class _FoodSearchSheetState extends ConsumerState<FoodSearchSheet> {
                                     ),
                                   ),
                                   const SizedBox(width: 8),
-                                  Text(
-                                    'Б: ${item.protein.toStringAsFixed(1)} · Ж: ${item.fat.toStringAsFixed(1)} · У: ${item.carbs.toStringAsFixed(1)}',
-                                    style: theme.textTheme.bodySmall?.copyWith(
-                                      color: theme.colorScheme.onSurfaceVariant,
-                                      fontSize: 11,
+                                  Flexible(
+                                    child: Text(
+                                      'Б: ${item.protein.toStringAsFixed(1)} · Ж: ${item.fat.toStringAsFixed(1)} · У: ${item.carbs.toStringAsFixed(1)}',
+                                      overflow: TextOverflow.ellipsis,
+                                      style: theme.textTheme.bodySmall?.copyWith(
+                                        color: theme.colorScheme.onSurfaceVariant,
+                                        fontSize: 11,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -437,11 +440,14 @@ class _FoodSearchSheetState extends ConsumerState<FoodSearchSheet> {
                             ),
                           ),
                           const SizedBox(width: 8),
-                          Text(
-                            'Б: ${item.proteinPer100g.toStringAsFixed(1)} · Ж: ${item.fatPer100g.toStringAsFixed(1)} · У: ${item.carbsPer100g.toStringAsFixed(1)}',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                              fontSize: 11,
+                          Flexible(
+                            child: Text(
+                              'Б: ${item.proteinPer100g.toStringAsFixed(1)} · Ж: ${item.fatPer100g.toStringAsFixed(1)} · У: ${item.carbsPer100g.toStringAsFixed(1)}',
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                                fontSize: 11,
+                              ),
                             ),
                           ),
                         ],

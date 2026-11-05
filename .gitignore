@@ -43,6 +43,11 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+.gradle/
+**/android/.gradle/
+**/android/build/
+**/android/app/build/
+**/android/app/.cxx/
 
 # Widget Preview related
 .widget_preview/

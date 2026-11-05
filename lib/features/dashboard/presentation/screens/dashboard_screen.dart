@@ -168,12 +168,15 @@ class DashboardScreen extends ConsumerWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'Приёмы пищи сегодня',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
+                      Expanded(
+                        child: Text(
+                          'Приёмы пищи сегодня',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
+                      const SizedBox(width: 8),
                       Text(
                         'Всего: ${totals.calories.round()} ккал',
                         style: theme.textTheme.labelLarge?.copyWith(
@@ -546,6 +549,7 @@ class _MealSectionCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
+                      const SizedBox(width: 8),
                       Text(
                         '${entry.grams.toInt()} г  ·  ${entry.calculatedCalories.round()} ккал',
                         style: theme.textTheme.bodySmall?.copyWith(

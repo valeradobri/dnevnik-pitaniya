@@ -107,24 +107,30 @@ class HabitsStreakCard extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  const Icon(
-                    Icons.emoji_events_rounded,
-                    size: 18,
-                    color: Color(0xFFF59E0B),
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Награды: $unlockedCount из $totalAchievements',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF334155),
+              Expanded(
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.emoji_events_rounded,
+                      size: 18,
+                      color: Color(0xFFF59E0B),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        'Награды: $unlockedCount из $totalAchievements',
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF334155),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               TextButton.icon(
                 onPressed: () => context.push('/achievements'),
                 style: TextButton.styleFrom(

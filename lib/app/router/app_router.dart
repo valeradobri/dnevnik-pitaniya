@@ -19,6 +19,8 @@ import '../../features/food_database/presentation/screens/barcode_scanner_screen
 import '../../features/water/presentation/widgets/add_water_dialog.dart';
 import '../../features/weight/presentation/widgets/add_weight_dialog.dart';
 import '../../features/gamification/presentation/screens/achievements_screen.dart';
+import '../../features/notifications/presentation/screens/notification_settings_screen.dart';
+import '../../features/backup/presentation/screens/backup_screen.dart';
 
 /// Главный навигационный маршрутизатор приложения.
 ///
@@ -105,6 +107,20 @@ GoRouter createRouter(SharedPreferences prefs) {
         path: RouteNames.achievements,
         name: 'achievements',
         builder: (context, state) => const AchievementsScreen(),
+      ),
+
+      // ── Напоминания и уведомления ─────────────────────────────────
+      GoRoute(
+        path: RouteNames.notificationsSettings,
+        name: 'notifications-settings',
+        builder: (context, state) => const NotificationSettingsScreen(),
+      ),
+
+      // ── Резервное копирование и экспорт ────────────────────────────
+      GoRoute(
+        path: RouteNames.backup,
+        name: 'backup',
+        builder: (context, state) => const BackupScreen(),
       ),
     ],
   );

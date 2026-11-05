@@ -92,7 +92,9 @@ class _AddWaterDialogState extends ConsumerState<AddWaterDialog> {
             child: const Icon(Icons.water_drop_rounded, color: AppColors.water),
           ),
           const SizedBox(width: 12),
-          const Text('Записать воду'),
+          const Expanded(
+            child: Text('Записать воду'),
+          ),
         ],
       ),
       content: SingleChildScrollView(
@@ -151,25 +153,27 @@ class _AddWaterDialogState extends ConsumerState<AddWaterDialog> {
                             size: 22,
                           ),
                           const SizedBox(width: 8),
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                p.$2,
-                                style: theme.textTheme.labelLarge?.copyWith(
-                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                                  color: isSelected ? AppColors.water : theme.colorScheme.onSurface,
+                          Expanded(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  p.$2,
+                                  style: theme.textTheme.labelLarge?.copyWith(
+                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                                    color: isSelected ? AppColors.water : theme.colorScheme.onSurface,
+                                  ),
                                 ),
-                              ),
-                              Text(
-                                p.$3,
-                                style: theme.textTheme.labelSmall?.copyWith(
-                                  color: theme.colorScheme.onSurfaceVariant,
-                                  fontSize: 10,
+                                Text(
+                                  p.$3,
+                                  style: theme.textTheme.labelSmall?.copyWith(
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                    fontSize: 10,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ],
                       ),

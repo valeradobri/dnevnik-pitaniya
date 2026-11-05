@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../app/theme/app_colors.dart';
+import '../../../../app/router/route_names.dart';
 import '../../../../core/utils/nutrition_calculator.dart';
 import '../../../dashboard/presentation/providers/dashboard_providers.dart';
+import '../../../notifications/presentation/providers/notification_providers.dart';
 import '../../../weight/presentation/widgets/weight_history_sheet.dart';
 
 /// Экран профиля пользователя с отображением текущих целей и параметров
@@ -79,24 +81,29 @@ class ProfileScreen extends ConsumerWidget {
             child: Column(
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _ProfileMetric(
-                      label: 'Текущий вес',
-                      value: '${currentWeight.toStringAsFixed(1)} кг',
-                      color: const Color(0xFF6366F1),
+                    Expanded(
+                      child: _ProfileMetric(
+                        label: 'Текущий вес',
+                        value: '${currentWeight.toStringAsFixed(1)} кг',
+                        color: const Color(0xFF6366F1),
+                      ),
                     ),
                     Container(width: 1, height: 36, color: theme.colorScheme.outlineVariant),
-                    _ProfileMetric(
-                      label: 'Целевой вес',
-                      value: '${targetWeight.toStringAsFixed(1)} кг',
-                      color: theme.colorScheme.primary,
+                    Expanded(
+                      child: _ProfileMetric(
+                        label: 'Целевой вес',
+                        value: '${targetWeight.toStringAsFixed(1)} кг',
+                        color: theme.colorScheme.primary,
+                      ),
                     ),
                     Container(width: 1, height: 36, color: theme.colorScheme.outlineVariant),
-                    _ProfileMetric(
-                      label: 'Осталось',
-                      value: '${(currentWeight - targetWeight).abs().toStringAsFixed(1)} кг',
-                      color: const Color(0xFFF97316),
+                    Expanded(
+                      child: _ProfileMetric(
+                        label: 'Осталось',
+                        value: '${(currentWeight - targetWeight).abs().toStringAsFixed(1)} кг',
+                        color: const Color(0xFFF97316),
+                      ),
                     ),
                   ],
                 ),
@@ -164,12 +171,19 @@ class ProfileScreen extends ConsumerWidget {
                 ),
                 const Divider(height: 24),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _MacroItem(label: 'Белки', value: '$targetProtein г', color: AppColors.protein),
-                    _MacroItem(label: 'Жиры', value: '$targetFat г', color: AppColors.fat),
-                    _MacroItem(label: 'Углеводы', value: '$targetCarbs г', color: AppColors.carbs),
-                    _MacroItem(label: 'Вода', value: '$targetWater мл', color: AppColors.water),
+                    Expanded(
+                      child: _MacroItem(label: 'Белки', value: '$targetProtein г', color: AppColors.protein),
+                    ),
+                    Expanded(
+                      child: _MacroItem(label: 'Жиры', value: '$targetFat г', color: AppColors.fat),
+                    ),
+                    Expanded(
+                      child: _MacroItem(label: 'Углеводы', value: '$targetCarbs г', color: AppColors.carbs),
+                    ),
+                    Expanded(
+                      child: _MacroItem(label: 'Вода', value: '$targetWater мл', color: AppColors.water),
+                    ),
                   ],
                 ),
               ],
@@ -214,20 +228,24 @@ class ProfileScreen extends ConsumerWidget {
           ),
           _SettingsTile(
             icon: Icons.notifications_outlined,
-            label: 'Напоминания (Фаза 4)',
-            onTap: () {},
+            label: 'Напоминания',
+            subtitle: ref.watch(notificationSettingsProvider).isMasterEnabled
+                ? 'Включены (${ref.watch(notificationSettingsProvider).enabledCount} активных)'
+                : 'Отключены',
+            onTap: () => context.push(RouteNames.notificationsSettings),
           ),
           _SettingsTile(
             icon: Icons.backup_outlined,
-            label: 'Резервная копия данных (Фаза 5)',
-            onTap: () {},
+            label: 'Резервная копия и экспорт',
+            subtitle: 'Экспорт всей базы в JSON и таблиц в Excel/CSV',
+            onTap: () => context.push(RouteNames.backup),
           ),
           const SizedBox(height: 16),
           Text('О приложении', style: theme.textTheme.titleMedium),
           const SizedBox(height: 8),
           _SettingsTile(
             icon: Icons.verified_outlined,
-            label: 'Дневник питания v0.2.0 (Фаза 2)',
+            label: 'Дневник питания v1.0.0 (Релизная версия)',
             onTap: () {},
           ),
         ],
@@ -314,11 +332,13 @@ class _SettingsTile extends StatelessWidget {
   const _SettingsTile({
     required this.icon,
     required this.label,
+    this.subtitle,
     required this.onTap,
   });
 
   final IconData icon;
   final String label;
+  final String? subtitle;
   final VoidCallback onTap;
 
   @override
@@ -328,6 +348,14 @@ class _SettingsTile extends StatelessWidget {
     return ListTile(
       leading: Icon(icon, color: theme.colorScheme.primary),
       title: Text(label, style: theme.textTheme.bodyLarge),
+      subtitle: subtitle != null
+          ? Text(
+              subtitle!,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            )
+          : null,
       trailing: const Icon(Icons.chevron_right_rounded),
       contentPadding: const EdgeInsets.symmetric(horizontal: 4),
       onTap: onTap,

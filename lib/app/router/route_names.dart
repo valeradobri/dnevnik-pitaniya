@@ -34,6 +34,12 @@ abstract final class RouteNames {
   // ── Геймификация и привычки ─────────────────────────────────────────
   static const String achievements = '/achievements';
 
+  // ── Напоминания и уведомления ────────────────────────────────────────
+  static const String notificationsSettings = '/notifications-settings';
+
+  // ── Резервное копирование ───────────────────────────────────────────
+  static const String backup = '/backup';
+
   // ── Модальные экраны ────────────────────────────────────────────────
   static const String quickAddModal = '/quick-add';
 }

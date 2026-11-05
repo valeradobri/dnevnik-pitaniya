@@ -106,7 +106,8 @@ class _CreateFoodDialogState extends ConsumerState<CreateFoodDialog> {
     final theme = Theme.of(context);
 
     return AlertDialog(
-      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      scrollable: true,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       title: Row(
         children: [
@@ -124,81 +125,88 @@ class _CreateFoodDialogState extends ConsumerState<CreateFoodDialog> {
       ),
       content: Form(
         key: _formKey,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Укажите пищевую ценность на 100 граммов продукта:',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Укажите пищевую ценность на 100 граммов продукта:',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
               ),
-              if (widget.initialBarcode != null) ...[
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.3)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.qr_code_scanner_rounded, size: 16, color: theme.colorScheme.primary),
-                      const SizedBox(width: 8),
-                      Text(
+            ),
+            if (widget.initialBarcode != null) ...[
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.3)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.qr_code_scanner_rounded, size: 16, color: theme.colorScheme.primary),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
                         'Штрих-код: ${widget.initialBarcode}',
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                           color: theme.colorScheme.primary,
                         ),
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-              ],
-
-              // Название
-              TextFormField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  labelText: 'Название продукта *',
-                  hintText: 'Например, Домашний творог',
-                  filled: true,
-                  fillColor: theme.colorScheme.surfaceContainerLowest,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
-                ),
-                validator: (val) => val == null || val.trim().isEmpty ? 'Введите название' : null,
-              ),
-              const SizedBox(height: 12),
-
-              // Бренд
-              TextFormField(
-                controller: _brandController,
-                decoration: InputDecoration(
-                  labelText: 'Бренд / Производитель (опционально)',
-                  filled: true,
-                  fillColor: theme.colorScheme.surfaceContainerLowest,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 12),
+            ],
 
-              // Категория
-              DropdownButtonFormField<String>(
-                initialValue: _category,
-                isExpanded: true,
-                decoration: InputDecoration(
-                  labelText: 'Категория',
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  filled: true,
-                  fillColor: theme.colorScheme.surfaceContainerLowest,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
-                ),
+            // Название
+            TextFormField(
+              controller: _nameController,
+              decoration: InputDecoration(
+                labelText: 'Название продукта *',
+                hintText: 'Например, Домашний творог',
+                filled: true,
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                fillColor: theme.colorScheme.surfaceContainerLowest,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+              validator: (val) => val == null || val.trim().isEmpty ? 'Введите название' : null,
+            ),
+            const SizedBox(height: 12),
+
+            // Бренд
+            TextFormField(
+              controller: _brandController,
+              decoration: InputDecoration(
+                labelText: 'Бренд / Производитель (опционально)',
+                filled: true,
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                fillColor: theme.colorScheme.surfaceContainerLowest,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Категория
+            DropdownButtonFormField<String>(
+              initialValue: _category,
+              isExpanded: true,
+              isDense: true,
+              decoration: InputDecoration(
+                labelText: 'Категория',
+                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                filled: true,
+                fillColor: theme.colorScheme.surfaceContainerLowest,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+              ),
                 items: _categories
                     .map((c) => DropdownMenuItem(
                           value: c.$1,
@@ -289,7 +297,6 @@ class _CreateFoodDialogState extends ConsumerState<CreateFoodDialog> {
             ],
           ),
         ),
-      ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),

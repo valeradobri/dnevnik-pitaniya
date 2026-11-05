@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/database/app_database.dart';
 import '../screens/recipe_detail_screen.dart';
 import '../screens/create_recipe_screen.dart';
+import '../screens/import_recipe_screen.dart';
 import '../../../../core/widgets/filter_pill.dart';
 
 class RecipesCatalogView extends ConsumerStatefulWidget {
@@ -21,8 +22,10 @@ class _RecipesCatalogViewState extends ConsumerState<RecipesCatalogView> {
     ('all', 'Все', null),
     ('favorites', 'Избранное', Icons.star_rounded),
     ('breakfast', 'Завтраки', null),
+    ('soup', 'Супы', null),
     ('lunch', 'Обеды', null),
     ('dinner', 'Ужины', null),
+    ('salad', 'Салаты', null),
     ('snack', 'Перекусы', null),
   ];
 
@@ -39,7 +42,7 @@ class _RecipesCatalogViewState extends ConsumerState<RecipesCatalogView> {
 
     return Column(
       children: [
-        // Поиск и кнопка создания
+        // Поиск и кнопки импорта / создания
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
           child: Row(
@@ -71,13 +74,28 @@ class _RecipesCatalogViewState extends ConsumerState<RecipesCatalogView> {
                 ),
               ),
               const SizedBox(width: 8),
-              FilledButton.tonal(
-                onPressed: () => Navigator.push(context, CreateRecipeScreen.route()),
-                style: FilledButton.styleFrom(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              Tooltip(
+                message: 'Импортировать по ссылке',
+                child: FilledButton.tonal(
+                  onPressed: () => Navigator.push(context, ImportRecipeScreen.route()),
+                  style: FilledButton.styleFrom(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  ),
+                  child: const Icon(Icons.link_rounded, size: 22),
                 ),
-                child: const Icon(Icons.add_rounded, size: 22),
+              ),
+              const SizedBox(width: 8),
+              Tooltip(
+                message: 'Создать рецепт',
+                child: FilledButton.tonal(
+                  onPressed: () => Navigator.push(context, CreateRecipeScreen.route()),
+                  style: FilledButton.styleFrom(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  ),
+                  child: const Icon(Icons.add_rounded, size: 22),
+                ),
               ),
             ],
           ),
