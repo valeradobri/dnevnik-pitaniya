@@ -31,6 +31,11 @@
     - Каталог поиска продуктов [FoodSearchSheet](file:///d:/go-projects/Dnevnik/lib/features/food_database/presentation/widgets/food_search_sheet.dart): иконка молнии в шапке и кнопка в пустом результате поиска.
   - Метод `insertQuickAddEntry` в [DiaryDao](file:///d:/go-projects/Dnevnik/lib/core/database/daos/diary_dao.dart) с переиспользованием служебного продукта `quick_add`, изолированного от каталога продуктов [FoodDao](file:///d:/go-projects/Dnevnik/lib/core/database/daos/food_dao.dart).
 
+- **Фирменная иконка приложения и логотип («Свежая мята» 🌱)**:
+  - Создана и установлена фирменная 3D-иконка приложения с зелёным ростком и росой для рабочего стола Android во всех плотностях `mipmap` (`mdpi`, `hdpi`, `xhdpi`, `xxhdpi`, `xxxhdpi`).
+  - Добавлен исходный логотип высокого разрешения в [assets/images/app_logo.png](file:///d:/go-projects/Dnevnik/assets/images/app_logo.png) и зарегистрирован в [pubspec.yaml](file:///d:/go-projects/Dnevnik/pubspec.yaml).
+  - Интегрирован логотип в первый шаг приветствия онбординга [onboarding_intro_step.dart](file:///d:/go-projects/Dnevnik/lib/features/onboarding/presentation/widgets/onboarding_intro_step.dart).
+
 - **Автотесты и качество**:
   - 6 модульных тестов в [diary_copy_test.dart](file:///d:/go-projects/Dnevnik/test/unit/diary_copy_test.dart).
   - 4 модульных теста в [quick_add_test.dart](file:///d:/go-projects/Dnevnik/test/unit/quick_add_test.dart).
