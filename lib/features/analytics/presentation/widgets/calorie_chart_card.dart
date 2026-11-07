@@ -68,12 +68,16 @@ class CalorieChartCard extends StatelessWidget {
                           Text(
                             'Калории и норма',
                             style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                           Text(
                             'Цель: ${targetCalories.round()} ккал',
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: theme.colorScheme.onSurfaceVariant,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),

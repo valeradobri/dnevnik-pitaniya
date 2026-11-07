@@ -28,21 +28,26 @@ class NotificationSettingsState {
   const NotificationSettingsState({
     required this.isMasterEnabled,
     required this.settings,
+    this.areSystemPermissionsGranted = true,
     this.isLoading = false,
   });
 
   final bool isMasterEnabled;
   final List<NotificationSetting> settings;
+  final bool areSystemPermissionsGranted;
   final bool isLoading;
 
   NotificationSettingsState copyWith({
     bool? isMasterEnabled,
     List<NotificationSetting>? settings,
+    bool? areSystemPermissionsGranted,
     bool? isLoading,
   }) {
     return NotificationSettingsState(
       isMasterEnabled: isMasterEnabled ?? this.isMasterEnabled,
       settings: settings ?? this.settings,
+      areSystemPermissionsGranted:
+          areSystemPermissionsGranted ?? this.areSystemPermissionsGranted,
       isLoading: isLoading ?? this.isLoading,
     );
   }
@@ -67,6 +72,7 @@ class NotificationSettingsNotifier
     if (_repo == null) {
       _lazyLoadRepo();
     }
+    checkPermissions();
   }
 
   final NotificationService service;
@@ -86,6 +92,7 @@ class NotificationSettingsNotifier
   /// Первичная инициализация и синхронизация алармов с ОС
   Future<void> syncWithSystem() async {
     await service.initialize();
+    await checkPermissions();
     if (state.isMasterEnabled) {
       for (final setting in state.settings) {
         if (setting.isEnabled) {
@@ -103,7 +110,8 @@ class NotificationSettingsNotifier
   Future<void> toggleMaster(bool enabled) async {
     state = state.copyWith(isLoading: true);
     if (enabled) {
-      await service.requestPermissions();
+      final granted = await service.requestPermissions();
+      state = state.copyWith(areSystemPermissionsGranted: granted);
       if (_repo != null) {
         await _repo!.setMasterEnabled(true);
       }
@@ -167,8 +175,24 @@ class NotificationSettingsNotifier
     }
   }
 
+  /// Проверка прав в системе и обновление состояния
+  Future<bool> checkPermissions() async {
+    final granted = await service.arePermissionsGranted();
+    state = state.copyWith(areSystemPermissionsGranted: granted);
+    return granted;
+  }
+
   /// Отправка мгновенного тестового уведомления для проверки
-  Future<void> sendTestNotification(NotificationType type) async {
+  Future<bool> sendTestNotification(NotificationType type) async {
+    var granted = await service.arePermissionsGranted();
+    if (!granted) {
+      granted = await service.requestPermissions();
+      state = state.copyWith(areSystemPermissionsGranted: granted);
+      if (!granted) {
+        return false;
+      }
+    }
+
     final setting = state.settings.firstWhere(
       (s) => s.type == type,
       orElse: () => NotificationSetting.defaultSettings.first,
@@ -180,11 +204,14 @@ class NotificationSettingsNotifier
       body: setting.message,
       payload: 'test_${setting.type.key}',
     );
+    return true;
   }
 
   /// Запрос системных разрешений вручную
   Future<bool> requestPermissions() async {
-    return await service.requestPermissions();
+    final granted = await service.requestPermissions();
+    state = state.copyWith(areSystemPermissionsGranted: granted);
+    return granted;
   }
 }
 

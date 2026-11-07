@@ -117,49 +117,65 @@ class MealPlanDao {
     return (db.delete(db.mealPlanItems)..where((t) => t.id.equals(id))).go();
   }
 
-  /// Автоматическая генерация списка покупок на неделю из рецептов плана
-  Future<List<ShoppingItem>> generateShoppingList(DateTime date) async {
+  /// Реактивный стрим списка покупок на неделю с возможностью фильтрации только предстоящих дней
+  Stream<List<ShoppingItem>> watchShoppingList(DateTime date, {bool onlyFromToday = false}) {
     final monday = startOfWeek(date);
     final sunday = monday.add(const Duration(days: 6, hours: 23, minutes: 59, seconds: 59));
 
-    final items = await (db.select(db.mealPlanItems)
-          ..where((t) =>
-              t.plannedDate.isBiggerOrEqualValue(monday) &
-              t.plannedDate.isSmallerOrEqualValue(sunday)))
-        .get();
+    final query = db.select(db.mealPlanItems)
+      ..where((t) =>
+          t.plannedDate.isBiggerOrEqualValue(monday) &
+          t.plannedDate.isSmallerOrEqualValue(sunday));
 
-    final gramsByFoodId = <int, double>{};
+    return query.watch().asyncMap((items) async {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
 
-    for (final item in items) {
-      if (item.recipeId != null) {
-        final recipe = await db.recipeDao.getRecipeWithDetails(item.recipeId!);
-        if (recipe != null) {
-          final factor = item.servings / (recipe.recipe.servings > 0 ? recipe.recipe.servings : 1);
-          for (final ing in recipe.ingredients) {
-            final foodId = ing.product.id;
-            final weight = ing.ingredient.grams * factor;
-            gramsByFoodId[foodId] = (gramsByFoodId[foodId] ?? 0) + weight;
+      final filteredItems = onlyFromToday
+          ? items.where((it) {
+              final d = DateTime(it.plannedDate.year, it.plannedDate.month, it.plannedDate.day);
+              return !d.isBefore(today);
+            }).toList()
+          : items;
+
+      final gramsByFoodId = <int, double>{};
+
+      for (final item in filteredItems) {
+        if (item.recipeId != null) {
+          final recipe = await db.recipeDao.getRecipeWithDetails(item.recipeId!);
+          if (recipe != null) {
+            final factor = item.servings / (recipe.recipe.servings > 0 ? recipe.recipe.servings : 1);
+            for (final ing in recipe.ingredients) {
+              final foodId = ing.product.id;
+              final weight = ing.ingredient.grams * factor;
+              gramsByFoodId[foodId] = (gramsByFoodId[foodId] ?? 0) + weight;
+            }
           }
         }
       }
-    }
 
-    final shoppingList = <ShoppingItem>[];
-    for (final entry in gramsByFoodId.entries) {
-      final food = await db.foodDao.getFoodById(entry.key);
-      if (food != null) {
-        shoppingList.add(
-          ShoppingItem(
-            foodId: food.id,
-            name: food.name,
-            category: food.category,
-            totalGrams: entry.value,
-          ),
-        );
+      final shoppingList = <ShoppingItem>[];
+      for (final entry in gramsByFoodId.entries) {
+        final food = await db.foodDao.getFoodById(entry.key);
+        if (food != null) {
+          shoppingList.add(
+            ShoppingItem(
+              foodId: food.id,
+              name: food.name,
+              category: food.category,
+              totalGrams: entry.value,
+            ),
+          );
+        }
       }
-    }
 
-    shoppingList.sort((a, b) => a.category.compareTo(b.category));
-    return shoppingList;
+      shoppingList.sort((a, b) => a.category.compareTo(b.category));
+      return shoppingList;
+    });
+  }
+
+  /// Автоматическая генерация списка покупок на неделю из рецептов плана
+  Future<List<ShoppingItem>> generateShoppingList(DateTime date, {bool onlyFromToday = false}) async {
+    return watchShoppingList(date, onlyFromToday: onlyFromToday).first;
   }
 }

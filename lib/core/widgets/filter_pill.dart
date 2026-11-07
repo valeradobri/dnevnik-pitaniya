@@ -29,11 +29,11 @@ class FilterPill extends StatelessWidget {
 
     final bgColor = isSelected
         ? primary
-        : (isDark ? const Color(0xFF262D38) : const Color(0xFFE2E8F0));
+        : (isDark ? const Color(0xFF262D38) : const Color(0xFFF1F5F9));
 
     final textColor = isSelected
         ? Colors.white
-        : (isDark ? Colors.white : const Color(0xFF0F172A));
+        : (isDark ? const Color(0xFFF8FAFC) : const Color(0xFF0F172A));
 
     final borderColor = isSelected
         ? primary

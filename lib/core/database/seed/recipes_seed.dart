@@ -294,7 +294,7 @@ final List<SeedRecipe> curatedSeedRecipes = [
     description:
         'Сочные мясные тефтели из диетической говядины, тушенные в ароматной томатно-сметанной подливке.\n\nШаги приготовления:\n1. Нежирную говядину измельчите в фарш, добавьте мелко нарезанный лук, отварной рис, яйцо, соль и перец.\n2. Тщательно вымесите фарш и влажными руками сформируйте аккуратные круглые тефтели размером с грецкий орех.\n3. Смешайте томатную пасту со сметаной 15% и 250 мл теплой воды, слегка подсолите.\n4. Выложите тефтели в форму для запекания или глубокую сковороду, залейте соусом.\n5. Запекайте в духовке при 180°C или тушите на плите под крышкой 30 минут до готовности.',
     ingredients: [
-      SeedRecipeIngredient(foodQuery: 'говядина постная', grams: 450, notes: 'Постный говяжий фарш'),
+      SeedRecipeIngredient(foodQuery: 'фарш говяжий', grams: 450, notes: 'Постный говяжий фарш'),
       SeedRecipeIngredient(foodQuery: 'рис белый варёный', grams: 120, notes: 'Отварной рис'),
       SeedRecipeIngredient(foodQuery: 'яйцо куриное', grams: 55, notes: '1 яйцо'),
       SeedRecipeIngredient(foodQuery: 'лук репчатый', grams: 70, notes: '1 небольшая луковица'),
@@ -360,7 +360,7 @@ final List<SeedRecipe> curatedSeedRecipes = [
     description:
         'Нежнейшая тушеная говядина, тающая во рту, с морковью и луком. Прекрасный источник гемового железа и чистого протеина.\n\nШаги приготовления:\n1. Постную говядину нарежьте кусочками размером 2–3 см.\n2. Морковь нарежьте крупными кружочками, лук полукольцами.\n3. В сотейнике с толстым дном на растительном масле слегка обжарьте мясо 5 минут на сильном огне до запечатывания соков.\n4. Добавьте лук и морковь, влейте 150 мл горячей воды, убавьте огонь до минимума и накройте крышкой.\n5. Тушите на слабом огне 40–45 минут до полной мягкости мяса. В конце добавьте лавровый лист и зелень.',
     ingredients: [
-      SeedRecipeIngredient(foodQuery: 'говядина постная', grams: 350, notes: 'Нежирная говядина'),
+      SeedRecipeIngredient(foodQuery: 'говядина нежирная', grams: 350, notes: 'Нежирная говядина'),
       SeedRecipeIngredient(foodQuery: 'морковь свежая', grams: 120, notes: '1 крупная морковь'),
       SeedRecipeIngredient(foodQuery: 'лук репчатый', grams: 80, notes: '1 луковица'),
       SeedRecipeIngredient(foodQuery: 'масло подсолнечное', grams: 10, notes: '1 ст. ложка'),
@@ -427,7 +427,7 @@ final List<SeedRecipe> curatedSeedRecipes = [
         'Традиционный пикантный салат из вареной свеклы с хрустящими грецкими орехами и ароматным чесноком. Отлично стимулирует пищеварение.\n\nШаги приготовления:\n1. Вареную столовую свеклу очистите и натрите на средней или крупной терке.\n2. Грецкие орехи слегка порубите ножом на небольшие кусочки.\n3. Зубчик чеснока пропустите через пресс или мелко измельчите.\n4. Соедините свеклу, орехи и чеснок в салатнике, посолите по вкусу.\n5. Заправьте оливковым маслом и перемешайте.',
     ingredients: [
       SeedRecipeIngredient(foodQuery: 'свёкла столовая варёная', grams: 300, notes: 'Отварная свёкла'),
-      SeedRecipeIngredient(foodQuery: 'орехи грецкие', grams: 30, notes: 'Ядра грецкого ореха'),
+      SeedRecipeIngredient(foodQuery: 'грецкий орех', grams: 30, notes: 'Ядра грецкого ореха'),
       SeedRecipeIngredient(foodQuery: 'чеснок свежий', grams: 5, notes: '1 зубчик чеснока'),
       SeedRecipeIngredient(foodQuery: 'масло оливковое', grams: 10, notes: '1 ст. ложка'),
     ],
@@ -476,7 +476,7 @@ final List<SeedRecipe> curatedSeedRecipes = [
       SeedRecipeIngredient(foodQuery: 'банан свежий', grams: 130, notes: '1 спелый банан'),
       SeedRecipeIngredient(foodQuery: 'яйцо куриное', grams: 55, notes: '1 яйцо'),
       SeedRecipeIngredient(foodQuery: 'мука овсяная', grams: 50, notes: 'Овсяная мука'),
-      SeedRecipeIngredient(foodQuery: 'молоко 2.5%', grams: 50, notes: 'Молоко'),
+      SeedRecipeIngredient(foodQuery: 'молоко коровье', grams: 50, notes: 'Молоко'),
     ],
   ),
 
@@ -506,7 +506,7 @@ final List<SeedRecipe> curatedSeedRecipes = [
         'Быстрый, питательный и полезный перекус за 3 минуты. Идеален в моменты, когда хочется сладкого без чувства вины.\n\nШаги приготовления:\n1. Выложите свежий творог 5% в красивую пиалу или креманку.\n2. Грецкие орехи слегка поломайте пальцами или порубите ножом.\n3. Посыпьте творог орехами и полейте натуральным цветочным мёдом.',
     ingredients: [
       SeedRecipeIngredient(foodQuery: 'творог 5%', grams: 150, notes: 'Свежий творог 5%'),
-      SeedRecipeIngredient(foodQuery: 'орехи грецкие', grams: 20, notes: 'Грецкие орехи'),
+      SeedRecipeIngredient(foodQuery: 'грецкий орех', grams: 20, notes: 'Грецкие орехи'),
       SeedRecipeIngredient(foodQuery: 'мёд пчелиный', grams: 15, notes: '1 ст. ложка мёда'),
     ],
   ),

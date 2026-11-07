@@ -118,12 +118,16 @@ class WeightTrendChartCard extends StatelessWidget {
                           Text(
                             'Динамика веса',
                             style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                           Text(
                             'Цель: ${targetWeight.toStringAsFixed(1)} кг',
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: theme.colorScheme.onSurfaceVariant,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),

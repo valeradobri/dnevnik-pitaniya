@@ -5,11 +5,61 @@ import '../../domain/models/notification_setting.dart';
 import '../providers/notification_providers.dart';
 
 /// Экран настройки локальных ненавязчивых напоминаний (Фаза 4.3)
-class NotificationSettingsScreen extends ConsumerWidget {
+class NotificationSettingsScreen extends ConsumerStatefulWidget {
   const NotificationSettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<NotificationSettingsScreen> createState() =>
+      _NotificationSettingsScreenState();
+}
+
+class _NotificationSettingsScreenState
+    extends ConsumerState<NotificationSettingsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(notificationSettingsProvider.notifier).checkPermissions();
+    });
+  }
+
+  Future<void> _triggerTest(
+    NotificationSettingsNotifier notifier,
+    NotificationType type,
+    String label,
+    ThemeData theme,
+  ) async {
+    final success = await notifier.sendTestNotification(type);
+    if (!mounted) return;
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Тестовое уведомление ($label) отправлено в шторку! 🔔'),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Уведомления запрещены в системе телефона. Разрешите их выше 🔔',
+          ),
+          backgroundColor: theme.colorScheme.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final state = ref.watch(notificationSettingsProvider);
     final notifier = ref.read(notificationSettingsProvider.notifier);
@@ -21,28 +71,82 @@ class NotificationSettingsScreen extends ConsumerWidget {
           IconButton(
             tooltip: 'Проверить тестовое уведомление',
             icon: const Icon(Icons.notification_add_outlined),
-            onPressed: () async {
-              await notifier.sendTestNotification(NotificationType.breakfast);
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: const Text(
-                      'Тестовое уведомление отправлено! Проверьте шторку телефона 🔔',
-                    ),
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                );
-              }
-            },
+            onPressed: () => _triggerTest(
+              notifier,
+              NotificationType.breakfast,
+              'Завтрак',
+              theme,
+            ),
           ),
         ],
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
         children: [
+          // ── Баннер системных разрешений (если отключены) ─────────
+          if (!state.areSystemPermissionsGranted) ...[
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.errorContainer.withValues(alpha: 0.45),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: theme.colorScheme.error.withValues(alpha: 0.4),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.notifications_off_rounded,
+                    color: theme.colorScheme.error,
+                    size: 24,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Уведомления отключены',
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onErrorContainer,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Разрешите приложению отправлять уведомления, чтобы они появлялись в шторке телефона.',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onErrorContainer,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  FilledButton(
+                    onPressed: () async {
+                      final granted = await notifier.requestPermissions();
+                      if (context.mounted && granted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Уведомления успешно разрешены! 🔔'),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      }
+                    },
+                    style: FilledButton.styleFrom(
+                      visualDensity: VisualDensity.compact,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                    ),
+                    child: const Text('Разрешить'),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
           // ── Баннер философии заботы ──────────────────────────────
           Container(
             padding: const EdgeInsets.all(16),
@@ -223,20 +327,12 @@ class NotificationSettingsScreen extends ConsumerWidget {
                         notifier.updateTime(setting.type, picked);
                       }
                     },
-                    onTest: () async {
-                      await notifier.sendTestNotification(setting.type);
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Отправлено: ${setting.title} 🔔',
-                            ),
-                            behavior: SnackBarBehavior.floating,
-                            duration: const Duration(seconds: 2),
-                          ),
-                        );
-                      }
-                    },
+                    onTest: () => _triggerTest(
+                      notifier,
+                      setting.type,
+                      setting.title,
+                      theme,
+                    ),
                   );
                 }).toList(),
               ),
@@ -246,19 +342,12 @@ class NotificationSettingsScreen extends ConsumerWidget {
 
           // ── Кнопка проверки в один клик ───────────────────────────
           OutlinedButton.icon(
-            onPressed: () async {
-              await notifier.sendTestNotification(NotificationType.lunch);
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: const Text(
-                      'Тестовое напоминание об обеде отправлено! Проверьте шторку 🥗',
-                    ),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              }
-            },
+            onPressed: () => _triggerTest(
+              notifier,
+              NotificationType.lunch,
+              'Обед',
+              theme,
+            ),
             icon: const Icon(Icons.touch_app_outlined),
             label: const Text('Проверить работу уведомлений сейчас'),
             style: OutlinedButton.styleFrom(

@@ -48,19 +48,22 @@ class AnalyticsScreen extends ConsumerWidget {
           children: [
             // Переключатель периода (7 / 30 / 90 дней)
             Center(
-              child: SegmentedButton<AnalyticsPeriod>(
-                segments: AnalyticsPeriod.values.map((p) {
-                  return ButtonSegment(
-                    value: p,
-                    label: Text(p.label),
-                  );
-                }).toList(),
-                selected: {selectedPeriod},
-                onSelectionChanged: (set) {
-                  ref.read(analyticsPeriodProvider.notifier).state = set.first;
-                },
-                style: const ButtonStyle(
-                  visualDensity: VisualDensity.compact,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: SegmentedButton<AnalyticsPeriod>(
+                  segments: AnalyticsPeriod.values.map((p) {
+                    return ButtonSegment(
+                      value: p,
+                      label: Text(p.label),
+                    );
+                  }).toList(),
+                  selected: {selectedPeriod},
+                  onSelectionChanged: (set) {
+                    ref.read(analyticsPeriodProvider.notifier).state = set.first;
+                  },
+                  style: const ButtonStyle(
+                    visualDensity: VisualDensity.compact,
+                  ),
                 ),
               ),
             ),

@@ -21,47 +21,55 @@ class WeightHistorySheet extends ConsumerWidget {
     final theme = Theme.of(context);
     final weightDao = ref.watch(weightDaoProvider);
 
-    return Container(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.75,
-      ),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      child: Column(
-        children: [
-          const SizedBox(height: 12),
-          Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: theme.colorScheme.outlineVariant,
-              borderRadius: BorderRadius.circular(2),
+    return Material(
+      color: theme.colorScheme.surface,
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+      clipBehavior: Clip.antiAlias,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.75,
+        ),
+        child: Column(
+          children: [
+            const SizedBox(height: 12),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.outlineVariant,
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'История взвешиваний',
-                  style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                ),
-                FilledButton.icon(
-                  onPressed: () => AddWeightDialog.show(context),
-                  icon: const Icon(Icons.add_rounded, size: 20),
-                  label: const Text('Записать'),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF6366F1),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 16, 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'История взвешиваний',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 10),
+                  FilledButton.icon(
+                    onPressed: () => AddWeightDialog.show(context),
+                    icon: const Icon(Icons.add_rounded, size: 18),
+                    label: const Text('Записать'),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFF6366F1),
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          const Divider(height: 1),
+            const Divider(height: 1),
           Expanded(
             child: StreamBuilder<List<WeightEntry>>(
               stream: weightDao.watchWeightHistory(),
@@ -205,6 +213,7 @@ class WeightHistorySheet extends ConsumerWidget {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 }

@@ -16,6 +16,7 @@ class _MealPlannerViewState extends ConsumerState<MealPlannerView> {
   int _tabIndex = 0; // 0 = Календарь, 1 = Список покупок
   late DateTime _weekStart;
   int _selectedDayOffset = 0; // 0 = Пн, 6 = Вс
+  bool _onlyFromToday = false; // Фильтр: false = вся неделя, true = только с сегодняшнего дня
   final Set<int> _boughtFoodIds = {};
 
   final _days = const ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
@@ -340,42 +341,60 @@ class _MealPlannerViewState extends ConsumerState<MealPlannerView> {
                               final recipe = item.recipeDetails;
                               final title = recipe?.recipe.name ?? item.item.customNote ?? 'Блюдо';
 
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: InkWell(
-                                        onTap: recipe != null
-                                            ? () => Navigator.push(
-                                                  context,
-                                                  RecipeDetailScreen.route(recipe.recipe.id),
-                                                )
-                                            : null,
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              title,
-                                              style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
-                                            ),
-                                            if (recipe != null)
+                              return Dismissible(
+                                key: ValueKey('meal_plan_${item.item.id}'),
+                                direction: DismissDirection.endToStart,
+                                background: Container(
+                                  alignment: Alignment.centerRight,
+                                  padding: const EdgeInsets.only(right: 16),
+                                  margin: const EdgeInsets.symmetric(vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: theme.colorScheme.errorContainer,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Icon(
+                                    Icons.delete_outline_rounded,
+                                    color: theme.colorScheme.onErrorContainer,
+                                  ),
+                                ),
+                                onDismissed: (_) => mealPlanDao.deletePlanItem(item.item.id),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 4),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: InkWell(
+                                          onTap: recipe != null
+                                              ? () => Navigator.push(
+                                                    context,
+                                                    RecipeDetailScreen.route(recipe.recipe.id),
+                                                  )
+                                              : null,
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
                                               Text(
-                                                '${recipe.nutrientsPerServing.calories.round()} ккал на порцию',
-                                                style: theme.textTheme.bodySmall?.copyWith(
-                                                  color: theme.colorScheme.onSurfaceVariant,
-                                                ),
+                                                title,
+                                                style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
                                               ),
-                                          ],
+                                              if (recipe != null)
+                                                Text(
+                                                  '${recipe.nutrientsPerServing.calories.round()} ккал на порцию',
+                                                  style: theme.textTheme.bodySmall?.copyWith(
+                                                    color: theme.colorScheme.onSurfaceVariant,
+                                                  ),
+                                                ),
+                                            ],
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.close_rounded, size: 18),
-                                      color: theme.colorScheme.onSurfaceVariant,
-                                      onPressed: () => mealPlanDao.deletePlanItem(item.item.id),
-                                    ),
-                                  ],
+                                      IconButton(
+                                        icon: const Icon(Icons.close_rounded, size: 18),
+                                        color: theme.colorScheme.onSurfaceVariant,
+                                        onPressed: () => mealPlanDao.deletePlanItem(item.item.id),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               );
                             }),
@@ -398,9 +417,34 @@ class _MealPlannerViewState extends ConsumerState<MealPlannerView> {
           ),
         ] else ...[
           // Вкладка «Список покупок»
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 2, 16, 8),
+            child: Center(
+              child: SegmentedButton<bool>(
+                style: const ButtonStyle(
+                  visualDensity: VisualDensity.compact,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                segments: const [
+                  ButtonSegment<bool>(
+                    value: false,
+                    icon: Icon(Icons.date_range_rounded, size: 16),
+                    label: Text('Вся неделя', style: TextStyle(fontSize: 13)),
+                  ),
+                  ButtonSegment<bool>(
+                    value: true,
+                    icon: Icon(Icons.today_rounded, size: 16),
+                    label: Text('С сегодняшнего дня', style: TextStyle(fontSize: 13)),
+                  ),
+                ],
+                selected: {_onlyFromToday},
+                onSelectionChanged: (val) => setState(() => _onlyFromToday = val.first),
+              ),
+            ),
+          ),
           Expanded(
-            child: FutureBuilder<List<ShoppingItem>>(
-              future: mealPlanDao.generateShoppingList(_weekStart),
+            child: StreamBuilder<List<ShoppingItem>>(
+              stream: mealPlanDao.watchShoppingList(_weekStart, onlyFromToday: _onlyFromToday),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
                   return const Center(child: CircularProgressIndicator());
@@ -424,7 +468,9 @@ class _MealPlannerViewState extends ConsumerState<MealPlannerView> {
                           Text('Список покупок пуст', style: theme.textTheme.titleMedium),
                           const SizedBox(height: 6),
                           Text(
-                            'Запланируйте рецепты в календаре недели — и список необходимых продуктов с точным весом сформируется автоматически!',
+                            _onlyFromToday
+                                ? 'Начиная с сегодняшнего дня рецептов в плане нет. Переключите на «Вся неделя» или добавьте блюда в календаре!'
+                                : 'Запланируйте рецепты в календаре недели — и список необходимых продуктов с точным весом сформируется автоматически!',
                             style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                             textAlign: TextAlign.center,
                           ),
@@ -435,7 +481,7 @@ class _MealPlannerViewState extends ConsumerState<MealPlannerView> {
                 }
 
                 return ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 90),
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 90),
                   itemCount: shoppingList.length,
                   separatorBuilder: (ctx, i) => const Divider(height: 1),
                   itemBuilder: (context, index) {

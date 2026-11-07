@@ -204,6 +204,57 @@ void main() {
       expect(stats.totalActiveDays, equals(1));
       expect(stats.unlockedAchievementsCount, greaterThanOrEqualTo(1));
     });
+
+    test('MealPlanDao — watchShoppingList реактивно обновляется при удалении и поддерживает фильтр onlyFromToday', () async {
+      final now = DateTime.now();
+      final monday = db.mealPlanDao.startOfWeek(now);
+      final sunday = monday.add(const Duration(days: 6));
+
+      // Создаем недельный план
+      final plan = await db.mealPlanDao.getOrCreatePlanForWeek(monday);
+
+      // Получаем рецепты
+      final recipes = await db.recipeDao.watchAllRecipes().first;
+      expect(recipes, isNotEmpty);
+      final recipe1 = recipes[0];
+      final recipe2 = recipes.length > 1 ? recipes[1] : recipes[0];
+
+      // Добавляем рецепт на понедельник (прошлый день, если сегодня не пн)
+      final pastDate = DateTime(monday.year, monday.month, monday.day);
+      final item1Id = await db.mealPlanDao.addPlanItem(
+        mealPlanId: plan.id,
+        recipeId: recipe1.id,
+        plannedDate: pastDate,
+        mealType: 'breakfast',
+      );
+
+      // Добавляем рецепт на воскресенье (будущий день, если сегодня не вс)
+      final futureDate = DateTime(sunday.year, sunday.month, sunday.day);
+      await db.mealPlanDao.addPlanItem(
+        mealPlanId: plan.id,
+        recipeId: recipe2.id,
+        plannedDate: futureDate,
+        mealType: 'dinner',
+      );
+
+      // Проверяем, что в списке всей недели есть ингредиенты
+      final fullWeekList = await db.mealPlanDao.watchShoppingList(monday).first;
+      expect(fullWeekList, isNotEmpty);
+
+      // Удаляем рецепт с понедельника
+      await db.mealPlanDao.deletePlanItem(item1Id);
+
+      // Проверяем, что список мгновенно и реактивно обновился
+      final updatedList = await db.mealPlanDao.watchShoppingList(monday).first;
+      // Если recipe1 и recipe2 разные, размер изменится
+      if (recipe1.id != recipe2.id) {
+        expect(updatedList.length, isNot(equals(fullWeekList.length)));
+      }
+
+      // Проверяем работу фильтра onlyFromToday
+      final todayList = await db.mealPlanDao.watchShoppingList(monday, onlyFromToday: true).first;
+      expect(todayList, isNotEmpty); // воскресный рецепт остается
+    });
   });
 }
 

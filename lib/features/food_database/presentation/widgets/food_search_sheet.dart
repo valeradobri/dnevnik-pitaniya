@@ -7,6 +7,10 @@ import 'serving_size_sheet.dart';
 import 'create_food_dialog.dart';
 import '../screens/barcode_scanner_screen.dart';
 import '../../../../core/widgets/filter_pill.dart';
+import '../../domain/models/combo_item.dart';
+import 'combo_builder_sheet.dart';
+import 'saved_combo_sheet.dart';
+import '../../../recipes/domain/models/recipe_model.dart';
 
 class FoodSearchSheet extends ConsumerStatefulWidget {
   const FoodSearchSheet({
@@ -42,10 +46,12 @@ class _FoodSearchSheetState extends ConsumerState<FoodSearchSheet> {
   bool _isSearchingOnline = false;
   List<RemoteFoodProduct>? _onlineResults;
   final OpenFoodFactsClient _offClient = OpenFoodFactsClient();
+  final List<ComboIngredientItem> _comboItems = [];
 
   final List<(String, String, IconData?)> _categories = const [
     ('all', 'Все', null),
     ('favorites', 'Избранное', Icons.star_rounded),
+    ('combos', 'Мои комбо', Icons.lunch_dining_rounded),
     ('grains', 'Крупы', null),
     ('meat', 'Мясо и птица', null),
     ('fish', 'Рыба', null),
@@ -258,14 +264,127 @@ class _FoodSearchSheetState extends ConsumerState<FoodSearchSheet> {
           const SizedBox(height: 12),
           const Divider(height: 1),
 
-          // Список продуктов
-          Expanded(
-            child: StreamBuilder<List<FoodProduct>>(
-              stream: foodDao.watchAllFoods(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+          // Список продуктов или сохраненных комбо
+          if (_selectedCategory == 'combos') ...[
+            Expanded(
+              child: StreamBuilder<List<RecipeWithDetails>>(
+                stream: ref.watch(recipeDaoProvider).watchCombosWithDetails(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  var combos = snapshot.data!;
+                  if (_query.isNotEmpty) {
+                    combos = combos
+                        .where((c) => c.recipe.name.toLowerCase().contains(_query.toLowerCase()))
+                        .toList();
+                  }
+
+                  if (combos.isEmpty) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(32),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.lunch_dining_outlined,
+                              size: 56,
+                              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                            ),
+                            const SizedBox(height: 12),
+                            Text('Нет сохраненных комбо', style: theme.textTheme.titleMedium),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Соберите бутерброд или перекус из нескольких продуктов в поиске — и сохраните его галочкой «⭐ Сохранить в Мои комбо»!',
+                              style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 16),
+                            FilledButton.tonalIcon(
+                              onPressed: () => setState(() => _selectedCategory = 'all'),
+                              icon: const Icon(Icons.add_rounded),
+                              label: const Text('Собрать из продуктов'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+
+                  return ListView.separated(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    itemCount: combos.length,
+                    separatorBuilder: (ctx, i) => const Divider(height: 1),
+                    itemBuilder: (context, index) {
+                      final combo = combos[index];
+                      final cals = combo.nutrientsPerServing.calories.round();
+                      final ingredientsText = combo.ingredients
+                          .map((i) => '${i.product.name} ${i.ingredient.grams.toInt()}г')
+                          .join(' + ');
+
+                      return ListTile(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        leading: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(Icons.lunch_dining_rounded, size: 22),
+                        ),
+                        title: Text(
+                          combo.recipe.name,
+                          style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 2),
+                            Text(
+                              ingredientsText,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.bodySmall?.copyWith(fontSize: 11),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '$cals ккал · ${combo.totalGrams.toInt()} г · Б: ${combo.nutrientsPerServing.protein.toStringAsFixed(1)} · Ж: ${combo.nutrientsPerServing.fat.toStringAsFixed(1)} · У: ${combo.nutrientsPerServing.carbs.toStringAsFixed(1)}',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: theme.colorScheme.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                        trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
+                        onTap: () async {
+                          final added = await SavedComboSheet.show(
+                            context,
+                            combo: combo,
+                            initialMealType: widget.mealType,
+                            date: widget.date,
+                          );
+                          if (added == true && context.mounted) {
+                            Navigator.pop(context);
+                          }
+                        },
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ] else ...[
+            Expanded(
+              child: StreamBuilder<List<FoodProduct>>(
+                stream: foodDao.watchAllFoods(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
                 var list = snapshot.data!;
 
@@ -466,14 +585,27 @@ class _FoodSearchSheetState extends ConsumerState<FoodSearchSheet> {
                         ],
                       ),
                       onTap: () async {
-                        final added = await ServingSizeSheet.show(
+                        final result = await ServingSizeSheet.show(
                           context,
                           product: item,
                           initialMealType: widget.mealType,
                           date: widget.date,
                         );
-                        if (added == true && context.mounted) {
+                        if (result is bool && result == true && context.mounted) {
                           Navigator.pop(context);
+                        } else if (result is ComboIngredientItem && context.mounted) {
+                          setState(() => _comboItems.add(result));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('«${result.product.name}» (${result.grams.toInt()} г) добавлен в комбо! 🥪'),
+                              behavior: SnackBarBehavior.floating,
+                              duration: const Duration(seconds: 2),
+                              action: SnackBarAction(
+                                label: 'Открыть',
+                                onPressed: _openComboBuilder,
+                              ),
+                            ),
+                          );
                         }
                       },
                     );
@@ -483,7 +615,93 @@ class _FoodSearchSheetState extends ConsumerState<FoodSearchSheet> {
             ),
           ),
         ],
-      ),
+
+        // Плашка собранного комбо (корзина внизу экрана)
+        if (_comboItems.isNotEmpty)
+          Container(
+            margin: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primaryContainer,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.12),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.lunch_dining_rounded, color: Colors.white, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Комбо: ${_comboItems.length} ${_itemWord(_comboItems.length)} (${ComboSummary(_comboItems).totalGrams.toInt()} г)',
+                        style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        '${ComboSummary(_comboItems).totalCalories.round()} ккал · Б: ${ComboSummary(_comboItems).totalProtein.toStringAsFixed(1)} · Ж: ${ComboSummary(_comboItems).totalFat.toStringAsFixed(1)} · У: ${ComboSummary(_comboItems).totalCarbs.toStringAsFixed(1)}',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                FilledButton(
+                  onPressed: _openComboBuilder,
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    visualDensity: VisualDensity.compact,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('Готово', style: TextStyle(fontWeight: FontWeight.bold)),
+                      SizedBox(width: 4),
+                      Icon(Icons.arrow_forward_rounded, size: 16),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+    ),
+  );
+}
+
+  Future<void> _openComboBuilder() async {
+    final saved = await ComboBuilderSheet.show(
+      context,
+      items: _comboItems,
+      initialMealType: widget.mealType,
+      date: widget.date,
+      onAddMore: () {},
     );
+    if (saved == true && mounted) {
+      Navigator.pop(context);
+    }
+  }
+
+  String _itemWord(int n) {
+    if (n % 10 == 1 && n % 100 != 11) return 'продукт';
+    if (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20)) return 'продукта';
+    return 'продуктов';
   }
 }

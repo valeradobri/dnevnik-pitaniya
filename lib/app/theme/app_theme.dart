@@ -41,12 +41,12 @@ abstract final class AppTheme {
       brightness: Brightness.dark,
     ).copyWith(
       primary: AppColors.primaryLight,
-      onPrimary: AppColors.onPrimaryContainer,
-      primaryContainer: AppColors.onPrimaryContainer,
+      onPrimary: Colors.white,
+      primaryContainer: const Color(0xFF064E3B),
       onPrimaryContainer: AppColors.primaryContainer,
       secondary: AppColors.secondaryLight,
-      onSecondary: AppColors.onSecondaryContainer,
-      secondaryContainer: AppColors.onSecondaryContainer,
+      onSecondary: Colors.white,
+      secondaryContainer: const Color(0xFF7C2D12),
       onSecondaryContainer: AppColors.secondaryContainer,
       surface: AppColors.surfaceDark,
       onSurface: AppColors.onSurfaceDark,
@@ -219,7 +219,7 @@ abstract final class AppTheme {
       chipTheme: ChipThemeData(
         color: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return AppColors.primary;
+            return isLight ? AppColors.primary : AppColors.primaryLight;
           }
           return isLight ? const Color(0xFFF1F5F9) : const Color(0xFF262C36);
         }),
@@ -231,8 +231,8 @@ abstract final class AppTheme {
             );
           }
           return AppTypography.textTheme.labelMedium!.copyWith(
-            color: isLight ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-            fontWeight: FontWeight.w500,
+            color: isLight ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+            fontWeight: FontWeight.w600,
           );
         }),
         iconTheme: IconThemeData(
@@ -245,12 +245,12 @@ abstract final class AppTheme {
             return BorderSide.none;
           }
           return BorderSide(
-            color: isLight ? const Color(0xFFE2E8F0) : const Color(0xFF374151),
-            width: 1,
+            color: isLight ? const Color(0xFFCBD5E1) : const Color(0xFF3B4454),
+            width: 1.5,
           );
         }),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(14),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       ),

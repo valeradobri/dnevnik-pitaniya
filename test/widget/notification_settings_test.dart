@@ -13,6 +13,9 @@ class MockNotificationService extends NotificationService {
   Future<void> initialize() async {}
 
   @override
+  Future<bool> arePermissionsGranted() async => true;
+
+  @override
   Future<bool> requestPermissions() async => true;
 
   @override

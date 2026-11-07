@@ -33,6 +33,15 @@ final List<FoodProductsCompanion> initialFoodProducts = [
     sourceType: Value('verified'),
   ),
   const FoodProductsCompanion(
+    name: Value('Мука овсяная'),
+    caloriesPer100g: Value(369.0),
+    proteinPer100g: Value(13.0),
+    fatPer100g: Value(6.8),
+    carbsPer100g: Value(64.9),
+    category: Value('cereals'),
+    sourceType: Value('verified'),
+  ),
+  const FoodProductsCompanion(
     name: Value('Овсяная каша на воде'),
     caloriesPer100g: Value(88.0),
     proteinPer100g: Value(3.0),

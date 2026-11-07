@@ -59,20 +59,26 @@ class MacroDistributionCard extends StatelessWidget {
                 child: const Icon(Icons.pie_chart_rounded, color: AppColors.protein, size: 22),
               ),
               const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Баланс БЖУ',
-                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    hasData ? 'Доля калорий из белков, жиров и углеводов' : 'Целевое распределение',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Баланс БЖУ',
+                      style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                ],
+                    Text(
+                      hasData ? 'Доля калорий из белков, жиров и углеводов' : 'Целевое распределение',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -177,18 +183,25 @@ class _MacroRow extends StatelessWidget {
           child: Text(
             label,
             style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
         Text(
           '$percent%',
           style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold, color: color),
         ),
-        const SizedBox(width: 8),
-        if (grams > 0)
-          Text(
-            '(${grams.round()} г)',
-            style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+        if (grams > 0) ...[
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              '(${grams.round()} г)',
+              style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
+        ],
       ],
     );
   }

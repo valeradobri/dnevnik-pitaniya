@@ -74,12 +74,27 @@ class NotificationService {
       channelId,
       channelName,
       description: channelDescription,
-      importance: Importance.high,
+      importance: Importance.max,
       enableVibration: true,
       playSound: true,
     );
 
     await androidImpl.createNotificationChannel(channel);
+  }
+
+  /// Проверка, разрешены ли уведомления в системе
+  Future<bool> arePermissionsGranted() async {
+    try {
+      final androidImpl = _plugin
+          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+      if (androidImpl != null) {
+        final enabled = await androidImpl.areNotificationsEnabled();
+        return enabled ?? false;
+      }
+    } catch (e) {
+      debugPrint('[NotificationService] Ошибка проверки прав: $e');
+    }
+    return true;
   }
 
   /// Запрос системных разрешений на показ уведомлений
@@ -92,7 +107,8 @@ class NotificationService {
         try {
           await androidImpl.requestExactAlarmsPermission();
         } catch (_) {}
-        return granted ?? false;
+        final currentlyEnabled = await androidImpl.areNotificationsEnabled() ?? false;
+        return granted ?? currentlyEnabled;
       }
 
       final iosImpl = _plugin
@@ -118,7 +134,7 @@ class NotificationService {
         channelId,
         channelName,
         channelDescription: channelDescription,
-        importance: Importance.high,
+        importance: Importance.max,
         priority: Priority.high,
         icon: '@mipmap/ic_launcher',
         showWhen: true,
@@ -183,13 +199,18 @@ class NotificationService {
   }) async {
     if (!_isInitialized) await initialize();
 
-    await _plugin.show(
-      id: id,
-      title: title,
-      body: body,
-      notificationDetails: _notificationDetails(),
-      payload: payload,
-    );
+    try {
+      await _plugin.show(
+        id: id,
+        title: title,
+        body: body,
+        notificationDetails: _notificationDetails(),
+        payload: payload,
+      );
+      debugPrint('[NotificationService] Мгновенное уведомление успешно отправлено: $title');
+    } catch (e, stack) {
+      debugPrint('[NotificationService] Ошибка отправки мгновенного уведомления: $e\n$stack');
+    }
   }
 
   /// Отмена одного конкретного напоминания по ID

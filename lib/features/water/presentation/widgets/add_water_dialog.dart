@@ -11,6 +11,7 @@ class AddWaterDialog extends ConsumerStatefulWidget {
   static Future<bool?> show(BuildContext context, {required DateTime date}) {
     return showDialog<bool>(
       context: context,
+      useRootNavigator: true,
       builder: (ctx) => AddWaterDialog(date: date),
     );
   }
@@ -75,9 +76,84 @@ class _AddWaterDialogState extends ConsumerState<AddWaterDialog> {
     }
   }
 
+  Widget _buildPresetCard((int, String, String, IconData) p, ThemeData theme) {
+    final isSelected = !_isCustom && _selectedPreset == p.$1;
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            _selectedPreset = p.$1;
+            _isCustom = false;
+          });
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? (isDark
+                    ? AppColors.water.withValues(alpha: 0.22)
+                    : AppColors.waterLight)
+                : theme.colorScheme.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isSelected
+                  ? AppColors.water
+                  : theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+              width: isSelected ? 2 : 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                p.$4,
+                color: isSelected ? AppColors.water : theme.colorScheme.onSurfaceVariant,
+                size: 22,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      p.$2,
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                        color: isSelected
+                            ? (isDark ? const Color(0xFF38BDF8) : AppColors.water)
+                            : theme.colorScheme.onSurface,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      p.$3,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                        fontSize: 10.5,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
@@ -86,7 +162,9 @@ class _AddWaterDialogState extends ConsumerState<AddWaterDialog> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.waterLight,
+              color: isDark
+                  ? AppColors.water.withValues(alpha: 0.22)
+                  : AppColors.waterLight,
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(Icons.water_drop_rounded, color: AppColors.water),
@@ -110,77 +188,21 @@ class _AddWaterDialogState extends ConsumerState<AddWaterDialog> {
             ),
             const SizedBox(height: 18),
 
-            // Быстрые пресеты
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              mainAxisSpacing: 10,
-              crossAxisSpacing: 10,
-              childAspectRatio: 2.2,
-              children: _presets.map((p) {
-                final isSelected = !_isCustom && _selectedPreset == p.$1;
-                return Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () {
-                      setState(() {
-                        _selectedPreset = p.$1;
-                        _isCustom = false;
-                      });
-                    },
-                    borderRadius: BorderRadius.circular(16),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 180),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? AppColors.waterLight
-                            : theme.colorScheme.surfaceContainerLowest,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: isSelected
-                              ? AppColors.water
-                              : theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
-                          width: isSelected ? 2 : 1,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            p.$4,
-                            color: isSelected ? AppColors.water : theme.colorScheme.onSurfaceVariant,
-                            size: 22,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  p.$2,
-                                  style: theme.textTheme.labelLarge?.copyWith(
-                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                                    color: isSelected ? AppColors.water : theme.colorScheme.onSurface,
-                                  ),
-                                ),
-                                Text(
-                                  p.$3,
-                                  style: theme.textTheme.labelSmall?.copyWith(
-                                    color: theme.colorScheme.onSurfaceVariant,
-                                    fontSize: 10,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
+            // Быстрые пресеты без GridView для стабильной компоновки в AlertDialog
+            Row(
+              children: [
+                Expanded(child: _buildPresetCard(_presets[0], theme)),
+                const SizedBox(width: 10),
+                Expanded(child: _buildPresetCard(_presets[1], theme)),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(child: _buildPresetCard(_presets[2], theme)),
+                const SizedBox(width: 10),
+                Expanded(child: _buildPresetCard(_presets[3], theme)),
+              ],
             ),
             const SizedBox(height: 16),
 
@@ -191,10 +213,12 @@ class _AddWaterDialogState extends ConsumerState<AddWaterDialog> {
               },
               borderRadius: BorderRadius.circular(16),
               child: Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 decoration: BoxDecoration(
                   color: _isCustom
-                      ? AppColors.waterLight
+                      ? (isDark
+                          ? AppColors.water.withValues(alpha: 0.22)
+                          : AppColors.waterLight)
                       : theme.colorScheme.surfaceContainerLowest,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(

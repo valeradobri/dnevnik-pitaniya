@@ -4,6 +4,46 @@
 
 ---
 
+## [0.6.0-alpha.0] - 2026-11-07 (Гибридный конструктор комбо, синхронизация покупок, адаптивность и исправления)
+### Добавлено
+- **Гибридный конструктор составных блюд и комбо («Мои комбо»)**:
+  - Добавлена кнопка `+ В комбо` в модальное окно выбора порции [ServingSizeSheet](file:///d:/go-projects/Dnevnik/lib/features/food_database/presentation/widgets/serving_size_sheet.dart).
+  - Интерактивный плавающий поднос (Floating Tray) внизу экрана [FoodSearchSheet](file:///d:/go-projects/Dnevnik/lib/features/food_database/presentation/widgets/food_search_sheet.dart) с отображением числа продуктов, суммарных граммов и калорий.
+  - Модальный экран сборки [ComboBuilderSheet](file:///d:/go-projects/Dnevnik/lib/features/food_database/presentation/widgets/combo_builder_sheet.dart) с живым пересчетом КБЖУ, регулировкой веса каждого ингредиента, добавлением новых продуктов и автогенерацией умного названия.
+  - Однокликовая запись в дневник питания в одну аккуратную строку с детализацией состава в поле `notes`.
+  - Категория **«🍔 Мои комбо»** в каталоге продуктов для быстрого доступа к сохранённым шаблонам.
+  - Модальное окно [SavedComboSheet](file:///d:/go-projects/Dnevnik/lib/features/food_database/presentation/widgets/saved_combo_sheet.dart) с быстрым масштабированием порций (`0.5x`, `1x`, `1.5x`, `2x`, `3x`), добавлением в выбранный приём пищи в один клик и удалением шаблонов.
+- **Тесты и качество кода**:
+  - Добавлены модульные тесты [combo_item_test.dart](file:///d:/go-projects/Dnevnik/test/unit/combo_item_test.dart) и виджет-тесты [combo_flow_test.dart](file:///d:/go-projects/Dnevnik/test/widget/combo_flow_test.dart).
+  - Общее количество автоматических тестов увеличено до **74 тестов (100% passed)**.
+  - Статический анализ `flutter analyze`: **0 ошибок, 0 предупреждений**.
+
+### Исправлено
+- **Адаптивность верстки (RenderFlex Overflow)**:
+  - Устранена ошибка `Right overflowed by 30 pixels` на экране статистики [AnalyticsScreen](file:///d:/go-projects/Dnevnik/lib/features/analytics/presentation/screens/analytics_screen.dart) в карточках калорий, воды и тренда веса.
+  - Устранена ошибка переполнения в шторке истории взвешиваний [WeightHistorySheet](file:///d:/go-projects/Dnevnik/lib/features/weight/presentation/widgets/weight_history_sheet.dart).
+- **Цветовые контрасты и темы**:
+  - Исправлены нечитаемые цвета текста и фона в чипах фильтров категорий [FilterPill](file:///d:/go-projects/Dnevnik/lib/core/widgets/filter_pill.dart) и полях граммовок в светлой и тёмной темах.
+- **План покупок**:
+  - Исправлена реактивная синхронизация списка покупок в [MealPlannerView](file:///d:/go-projects/Dnevnik/lib/features/meal_planner/presentation/widgets/meal_planner_view.dart) при удалении рецептов из прошлых дней недели.
+- **Действия FAB**:
+  - Исправлено открытие диалога записи воды при нажатии «Записать воду» через центральное меню плюса.
+- **Уведомления**:
+  - Исправлена отправка тестового напоминания и регулярных пушей в шторку Android 13+ (создан нативный Notification Channel `dnevnik_reminders` и запрошены права `POST_NOTIFICATIONS`).
+- **Семена базы данных**:
+  - Очищен ошибочный ингредиент `Cream Soda Flavour` в семенном рецепте тефтелей в томатном соусе.
+
+## [0.5.0-alpha.0] - 2026-11-06 (Офлайн-база 26 рецептов, парсер ссылок Schema.org и бэкапы)
+### Добавлено
+- **Кураторская офлайн-база из 26 проверенных рецептов**:
+  - Завтраки, супы, горячие обеды, ужины, салаты и десерты с точной привязкой ингредиентов к базе КБЖУ и пошаговыми инструкциями.
+- **Автоматический импорт рецептов по ссылке (Парсер)**:
+  - Извлечение ингредиентов и шагов по стандарту Schema.org JSON-LD и OpenGraph с кулинарных сайтов (eda.ru, povarenok, iamcook и др.).
+  - Сопоставление ингредиентов с локальной базой продуктов и пересчет КБЖУ на лету.
+- **Резервное копирование и экспорт (BackupScreen)**:
+  - Полный экспорт базы данных в JSON и выгрузка данных в CSV для Excel / Google Таблиц.
+  - Восстановление данных со слиянием или заменой.
+
 ## [0.4.0-alpha.0] - 2026-11-01 (Фаза 4: Шаг 4.1 — Сканер штрих-кодов продуктов)
 ### Добавлено
 - **Полнофункциональный сканер штрих-кодов продуктов (`BarcodeScannerScreen`)**:

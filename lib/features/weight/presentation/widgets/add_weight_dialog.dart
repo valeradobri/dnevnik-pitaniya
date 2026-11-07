@@ -166,7 +166,13 @@ class _AddWeightDialogState extends ConsumerState<AddWeightDialog> {
                     children: [
                       const Icon(Icons.calendar_today_rounded, size: 18),
                       const SizedBox(width: 10),
-                      Text(dateStr, style: theme.textTheme.bodyMedium),
+                      Expanded(
+                        child: Text(
+                          dateStr,
+                          style: theme.textTheme.bodyMedium,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
                     ],
                   ),
                 ),

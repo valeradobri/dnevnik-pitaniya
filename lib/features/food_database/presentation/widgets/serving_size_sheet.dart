@@ -4,6 +4,8 @@ import 'package:drift/drift.dart' as drift;
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../../core/utils/nutrition_calculator.dart';
+import '../../../../core/widgets/filter_pill.dart';
+import '../../domain/models/combo_item.dart';
 
 class ServingSizeSheet extends ConsumerStatefulWidget {
   const ServingSizeSheet({
@@ -17,13 +19,13 @@ class ServingSizeSheet extends ConsumerStatefulWidget {
   final String initialMealType;
   final DateTime date;
 
-  static Future<bool?> show(
+  static Future<dynamic> show(
     BuildContext context, {
     required FoodProduct product,
     required String initialMealType,
     required DateTime date,
   }) {
-    return showModalBottomSheet<bool>(
+    return showModalBottomSheet<dynamic>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -242,6 +244,23 @@ class _ServingSizeSheetState extends ConsumerState<ServingSizeSheet> {
     }
   }
 
+  void _addToCombo() {
+    if (_grams <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Укажите вес порции больше 0 грамм')),
+      );
+      return;
+    }
+
+    final item = ComboIngredientItem(
+      product: widget.product,
+      grams: _grams,
+      isCooked: _supportsCooking && _isCooked,
+      coefficient: _coefficient,
+    );
+    Navigator.of(context).pop(item);
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -352,6 +371,26 @@ class _ServingSizeSheetState extends ConsumerState<ServingSizeSheet> {
                 SizedBox(
                   width: double.infinity,
                   child: SegmentedButton<bool>(
+                    style: SegmentedButton.styleFrom(
+                      backgroundColor: Theme.of(context).brightness == Brightness.dark
+                          ? const Color(0xFF262D38)
+                          : const Color(0xFFF1F5F9),
+                      foregroundColor: Theme.of(context).brightness == Brightness.dark
+                          ? const Color(0xFFCBD5E1)
+                          : const Color(0xFF334155),
+                      selectedBackgroundColor: AppColors.primary,
+                      selectedForegroundColor: Colors.white,
+                      side: BorderSide(
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? const Color(0xFF3B4454)
+                            : const Color(0xFFCBD5E1),
+                        width: 1.5,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                    ),
                     segments: const [
                       ButtonSegment<bool>(
                         value: false,
@@ -529,13 +568,11 @@ class _ServingSizeSheetState extends ConsumerState<ServingSizeSheet> {
                     final isSelected = _selectedMealType == m.$1;
                     return Padding(
                       padding: const EdgeInsets.only(right: 8),
-                      child: FilterChip(
-                        selected: isSelected,
-                        label: Text(m.$2),
-                        avatar: Icon(m.$3, size: 16),
-                        onSelected: (selected) {
-                          if (selected) setState(() => _selectedMealType = m.$1);
-                        },
+                      child: FilterPill(
+                        label: m.$2,
+                        icon: m.$3,
+                        isSelected: isSelected,
+                        onTap: () => setState(() => _selectedMealType = m.$1),
                       ),
                     );
                   }).toList(),
@@ -573,14 +610,44 @@ class _ServingSizeSheetState extends ConsumerState<ServingSizeSheet> {
                     child: TextFormField(
                       controller: _gramsController,
                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.onSurface,
+                      ),
                       decoration: InputDecoration(
                         labelText: _supportsCooking
                             ? (_isCooked ? 'Вес в тарелке' : 'Сухой вес')
                             : 'Граммы',
+                        labelStyle: TextStyle(
+                          color: theme.colorScheme.onSurfaceVariant,
+                          fontWeight: FontWeight.w500,
+                        ),
                         suffixText: 'г',
+                        suffixStyle: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                        ),
                         filled: true,
-                        fillColor: theme.colorScheme.surfaceContainerLowest,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                        fillColor: Theme.of(context).brightness == Brightness.dark
+                            ? const Color(0xFF262D38)
+                            : const Color(0xFFF8FAFC),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide(
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? const Color(0xFF3B4454)
+                                : const Color(0xFFCBD5E1),
+                            width: 1.5,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: const BorderSide(
+                            color: AppColors.primary,
+                            width: 2.0,
+                          ),
+                        ),
                       ),
                       onChanged: _onGramsChanged,
                     ),
@@ -597,17 +664,10 @@ class _ServingSizeSheetState extends ConsumerState<ServingSizeSheet> {
                     final isSelected = _grams == g;
                     return Padding(
                       padding: const EdgeInsets.only(right: 8),
-                      child: ActionChip(
-                        label: Text('${g.toInt()} г'),
-                        backgroundColor: isSelected
-                            ? theme.colorScheme.primaryContainer
-                            : theme.colorScheme.surfaceContainerLowest,
-                        side: BorderSide(
-                          color: isSelected
-                              ? theme.colorScheme.primary
-                              : theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
-                        ),
-                        onPressed: () => _selectChipGrams(g),
+                      child: _GramChip(
+                        grams: g,
+                        isSelected: isSelected,
+                        onTap: () => _selectChipGrams(g),
                       ),
                     );
                   }).toList(),
@@ -615,31 +675,61 @@ class _ServingSizeSheetState extends ConsumerState<ServingSizeSheet> {
               ),
               const SizedBox(height: 20),
 
-              // Кнопка добавления
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: FilledButton(
-                  onPressed: _isLoading ? null : _submit,
-                  style: FilledButton.styleFrom(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              // Кнопки добавления: одиночная запись и добавление в комбо
+              Row(
+                children: [
+                  Expanded(
+                    flex: 5,
+                    child: SizedBox(
+                      height: 52,
+                      child: FilledButton(
+                        onPressed: _isLoading ? null : _submit,
+                        style: FilledButton.styleFrom(
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              )
+                            : FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  _supportsCooking && _isCooked
+                                      ? 'Добавить готовую порцию'
+                                      : 'Добавить в дневник',
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                ),
+                              ),
+                      ),
+                    ),
                   ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                        )
-                      : FittedBox(
+                  const SizedBox(width: 8),
+                  Expanded(
+                    flex: 3,
+                    child: SizedBox(
+                      height: 52,
+                      child: FilledButton.tonal(
+                        onPressed: _isLoading ? null : _addToCombo,
+                        style: FilledButton.styleFrom(
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        ),
+                        child: const FittedBox(
                           fit: BoxFit.scaleDown,
-                          child: Text(
-                            _supportsCooking && _isCooked
-                                ? 'Добавить готовую порцию (${_grams.toInt()} г)'
-                                : 'Добавить в дневник (${_grams.toInt()} г)',
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.playlist_add_rounded, size: 20),
+                              SizedBox(width: 4),
+                              Text('+ В комбо', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                            ],
                           ),
                         ),
-                ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -662,27 +752,106 @@ class _MiniCoeffChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    const primary = Color(0xFF059669);
+
+    final bgColor = isSelected
+        ? primary
+        : (isDark ? const Color(0xFF262D38) : const Color(0xFFF1F5F9));
+
+    final textColor = isSelected
+        ? Colors.white
+        : (isDark ? const Color(0xFFF8FAFC) : const Color(0xFF0F172A));
+
+    final borderColor = isSelected
+        ? primary
+        : (isDark ? const Color(0xFF3B4454) : const Color(0xFFCBD5E1));
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 2),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(6),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        borderRadius: BorderRadius.circular(8),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
           decoration: BoxDecoration(
-            color: isSelected ? theme.colorScheme.primary : theme.colorScheme.surface,
-            borderRadius: BorderRadius.circular(6),
-            border: Border.all(
-              color: isSelected ? theme.colorScheme.primary : theme.colorScheme.outlineVariant,
-            ),
+            color: bgColor,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: borderColor, width: 1.2),
           ),
           child: Text(
             label,
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.bold,
-              color: isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface,
+              color: textColor,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _GramChip extends StatelessWidget {
+  const _GramChip({
+    required this.grams,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final double grams;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    const primary = Color(0xFF059669);
+
+    final bgColor = isSelected
+        ? primary
+        : (isDark ? const Color(0xFF262D38) : const Color(0xFFF1F5F9));
+
+    final textColor = isSelected
+        ? Colors.white
+        : (isDark ? const Color(0xFFF8FAFC) : const Color(0xFF0F172A));
+
+    final borderColor = isSelected
+        ? primary
+        : (isDark ? const Color(0xFF3B4454) : const Color(0xFFCBD5E1));
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          curve: Curves.easeInOut,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: borderColor, width: 1.5),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: primary.withValues(alpha: 0.35),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Text(
+            '${grams.toInt()} г',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+              color: textColor,
+              letterSpacing: 0.1,
             ),
           ),
         ),
