@@ -11,6 +11,7 @@ import '../../domain/models/combo_item.dart';
 import 'combo_builder_sheet.dart';
 import 'saved_combo_sheet.dart';
 import '../../../recipes/domain/models/recipe_model.dart';
+import '../../../diary/presentation/widgets/quick_add_sheet.dart';
 
 class FoodSearchSheet extends ConsumerStatefulWidget {
   const FoodSearchSheet({
@@ -161,6 +162,22 @@ class _FoodSearchSheetState extends ConsumerState<FoodSearchSheet> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
+                ),
+                const SizedBox(width: 4),
+                IconButton(
+                  tooltip: 'Быстрая запись ккал',
+                  visualDensity: VisualDensity.compact,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  icon: const Icon(Icons.bolt_rounded, color: Color(0xFFF59E0B), size: 24),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    QuickAddSheet.show(
+                      context,
+                      initialMealType: widget.mealType,
+                      initialDate: widget.date,
+                    );
+                  },
                 ),
                 const SizedBox(width: 8),
                 TextButton.icon(
@@ -520,6 +537,19 @@ class _FoodSearchSheetState extends ConsumerState<FoodSearchSheet> {
                               onPressed: _searchOnline,
                               icon: const Icon(Icons.travel_explore_rounded, size: 20),
                               label: Text('Искать «$_query» онлайн'),
+                            ),
+                            const SizedBox(height: 10),
+                            OutlinedButton.icon(
+                              onPressed: () {
+                                Navigator.pop(context);
+                                QuickAddSheet.show(
+                                  context,
+                                  initialMealType: widget.mealType,
+                                  initialDate: widget.date,
+                                );
+                              },
+                              icon: const Icon(Icons.bolt_rounded, size: 18, color: Color(0xFFF59E0B)),
+                              label: Text('Записать «$_query» через быструю запись'),
                             ),
                           ] else ...[
                             Text(

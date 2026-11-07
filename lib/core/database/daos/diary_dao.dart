@@ -213,4 +213,60 @@ class DiaryDao {
               t.entryDate.isSmallerOrEqualValue(end)))
         .go();
   }
+
+  /// Вставить быструю запись напрямую без выбора продукта из каталога
+  Future<int> insertQuickAddEntry({
+    required String mealType,
+    required String customName,
+    required double calories,
+    double protein = 0.0,
+    double fat = 0.0,
+    double carbs = 0.0,
+    double grams = 100.0,
+    required DateTime date,
+    String? notes,
+  }) async {
+    final quickFood = await _getOrCreateQuickAddFood();
+    final now = DateTime.now();
+
+    return db.into(db.diaryEntries).insert(
+      DiaryEntriesCompanion.insert(
+        mealType: mealType,
+        foodProductId: quickFood.id,
+        customName: customName.trim().isNotEmpty ? customName.trim() : 'Быстрая запись',
+        grams: grams,
+        calculatedCalories: calories,
+        calculatedProtein: protein,
+        calculatedFat: fat,
+        calculatedCarbs: carbs,
+        entryDate: date,
+        notes: Value(notes),
+        timestamp: Value(now),
+      ),
+    );
+  }
+
+  Future<FoodProduct> _getOrCreateQuickAddFood() async {
+    final existing = await (db.select(db.foodProducts)
+          ..where((t) => t.sourceType.equals('quick_add'))
+          ..limit(1))
+        .getSingleOrNull();
+
+    if (existing != null) return existing;
+
+    final id = await db.into(db.foodProducts).insert(
+      FoodProductsCompanion.insert(
+        name: 'Быстрая запись',
+        caloriesPer100g: 0.0,
+        proteinPer100g: 0.0,
+        fatPer100g: 0.0,
+        carbsPer100g: 0.0,
+        category: const Value('other'),
+        sourceType: const Value('quick_add'),
+      ),
+    );
+
+    return (await (db.select(db.foodProducts)..where((t) => t.id.equals(id))).getSingle());
+  }
 }
+

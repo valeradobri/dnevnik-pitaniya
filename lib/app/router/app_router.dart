@@ -16,6 +16,7 @@ import '../../features/analytics/presentation/screens/analytics_screen.dart';
 // Диалоги быстрого добавления (FAB)
 import '../../features/food_database/presentation/widgets/food_search_sheet.dart';
 import '../../features/food_database/presentation/screens/barcode_scanner_screen.dart';
+import '../../features/diary/presentation/widgets/quick_add_sheet.dart';
 import '../../features/water/presentation/widgets/add_water_dialog.dart';
 import '../../features/weight/presentation/widgets/add_weight_dialog.dart';
 import '../../features/gamification/presentation/screens/achievements_screen.dart';
@@ -237,6 +238,17 @@ class _QuickAddSheet extends StatelessWidget {
                 mealType: 'lunch',
                 date: DateTime.now(),
               );
+            },
+          ),
+          const SizedBox(height: 8),
+          _QuickAddItem(
+            icon: Icons.bolt_rounded,
+            color: const Color(0xFFEC4899),
+            label: 'Быстрая запись ккал',
+            subtitle: 'Ввести калории и БЖУ напрямую',
+            onTap: () {
+              Navigator.pop(context);
+              QuickAddSheet.show(context);
             },
           ),
           const SizedBox(height: 8),

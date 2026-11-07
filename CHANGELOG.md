@@ -4,25 +4,40 @@
 
 ---
 
-## [0.7.0-alpha.0] - 2026-11-07 (Копирование приёмов пищи и дублирование дней в дневнике)
+## [0.7.0-alpha.0] - 2026-11-07 (Копирование приёмов пищи, дублирование дней и быстрая запись калорий Quick Add)
 ### Добавлено
 - **Быстрое копирование приёмов пищи и рациона дней**:
   - **1-тап кнопка «Повторить вчерашний ...»**: если приём пищи в текущем дне ещё пуст, а вчера был заполнен, прямо в карточке отображается красивая быстрая кнопка с подсчётом продуктов и ккал для добавления в одно касание.
   - **Контекстное меню приёма пищи (`...`)**:
     - Однокликовое дублирование «Скопировать на завтра».
-    - Модальный диалог `CopyMealDialog` с выбором целевой даты (чипы «Завтра», «Сегодня», «+2 дня», календарь) и целевого приёма пищи (Завтрак, Обед, Ужин, Перекус).
+    - Модальный диалог [CopyMealDialog](file:///d:/go-projects/Dnevnik/lib/features/diary/presentation/widgets/copy_meal_dialog.dart) с выбором целевой даты (чипы «Завтра», «Сегодня», «+2 дня», календарь) и целевого приёма пищи (Завтрак, Обед, Ужин, Перекус).
     - Опция «Повторить из вчера» в любой момент.
     - Очистка приёма пищи с диалогом подтверждения.
   - **Контекстное меню всего дня в AppBar**:
     - «Скопировать на завтра» — полное дублирование всех приёмов текущего дня в завтрашний.
-    - Модальный диалог `CopyDayDialog` для переноса рациона на любую дату.
+    - Модальный диалог [CopyDayDialog](file:///d:/go-projects/Dnevnik/lib/features/diary/presentation/widgets/copy_day_dialog.dart) для переноса рациона на любую дату.
     - «Повторить вчерашний день» — перенос вчерашнего рациона целиком.
     - «Очистить день» — пакетное удаление записей за дату с подтверждением.
   - **Методы базы данных в `DiaryDao`**: `copyEntries`, `copyMeal`, `copyDay`, `clearMealForDate`, `clearDayForDate`.
-  - **Автотесты**:
-    - 6 модульных тестов в [diary_copy_test.dart](file:///d:/go-projects/Dnevnik/test/unit/diary_copy_test.dart).
-    - 2 виджет-теста в [copy_dialogs_test.dart](file:///d:/go-projects/Dnevnik/test/widget/copy_dialogs_test.dart).
-    - Общее количество автотестов выросло до **86 тестов (100% passed)**.
+
+- **Быстрая запись калорий и БЖУ напрямую (Quick Add)**:
+  - Модальная шторка [QuickAddSheet](file:///d:/go-projects/Dnevnik/lib/features/diary/presentation/widgets/quick_add_sheet.dart) для мгновенного логирования еды в кафе, гостях или при известной калорийности без поиска в базе.
+  - Быстрые инкрементальные чипы пресетов калорий (`+50`, `+100`, `+250`, `+500`).
+  - Опциональный ввод макронутриентов (Белки, Жиры, Углеводы) с цветовой маркировкой.
+  - Опциональное название блюда и заметка.
+  - Интеграция во все ключевые точки приложения:
+    - Главное меню FAB: пункт «⚡ Быстрая запись ккал».
+    - Контекстное меню каждого приёма пищи в дневнике: «⚡ Быстрая запись ккал...» с автовыбором приёма.
+    - Каталог поиска продуктов [FoodSearchSheet](file:///d:/go-projects/Dnevnik/lib/features/food_database/presentation/widgets/food_search_sheet.dart): иконка молнии в шапке и кнопка в пустом результате поиска.
+  - Метод `insertQuickAddEntry` в [DiaryDao](file:///d:/go-projects/Dnevnik/lib/core/database/daos/diary_dao.dart) с переиспользованием служебного продукта `quick_add`, изолированного от каталога продуктов [FoodDao](file:///d:/go-projects/Dnevnik/lib/core/database/daos/food_dao.dart).
+
+- **Автотесты и качество**:
+  - 6 модульных тестов в [diary_copy_test.dart](file:///d:/go-projects/Dnevnik/test/unit/diary_copy_test.dart).
+  - 4 модульных теста в [quick_add_test.dart](file:///d:/go-projects/Dnevnik/test/unit/quick_add_test.dart).
+  - 2 виджет-теста в [copy_dialogs_test.dart](file:///d:/go-projects/Dnevnik/test/widget/copy_dialogs_test.dart).
+  - 1 виджет-тест в [quick_add_sheet_test.dart](file:///d:/go-projects/Dnevnik/test/widget/quick_add_sheet_test.dart).
+  - Общее количество автотестов проекта увеличено до **91 теста (100% passed)**.
+  - Статический анализ `flutter analyze`: **0 ошибок, 0 предупреждений**.
 
 ---
 

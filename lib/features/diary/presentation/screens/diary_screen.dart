@@ -9,6 +9,7 @@ import '../../../food_database/presentation/widgets/food_search_sheet.dart';
 import '../../../nutrition_suggestions/presentation/widgets/meal_suggestions_sheet.dart';
 import '../widgets/copy_day_dialog.dart';
 import '../widgets/copy_meal_dialog.dart';
+import '../widgets/quick_add_sheet.dart';
 
 class DiaryScreen extends ConsumerStatefulWidget {
   const DiaryScreen({super.key});
@@ -597,9 +598,27 @@ class _DiaryMealSection extends ConsumerWidget {
                         }
                       }
                       break;
+                    case 'quick_add':
+                      QuickAddSheet.show(
+                        context,
+                        initialMealType: mealType,
+                        initialDate: date,
+                      );
+                      break;
                   }
                 },
                 itemBuilder: (ctx) => [
+                  const PopupMenuItem(
+                    value: 'quick_add',
+                    child: Row(
+                      children: [
+                        Icon(Icons.bolt_rounded, size: 20, color: Color(0xFFF59E0B)),
+                        SizedBox(width: 12),
+                        Text('Быстрая запись ккал...'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuDivider(),
                   if (entries.isNotEmpty) ...[
                     const PopupMenuItem(
                       value: 'copy_tomorrow',

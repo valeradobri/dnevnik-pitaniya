@@ -10,6 +10,7 @@ class FoodDao {
   /// Получить все продукты
   Future<List<FoodProduct>> getAllFoods() {
     return (db.select(db.foodProducts)
+          ..where((t) => t.sourceType.equals('quick_add').not())
           ..orderBy([(t) => OrderingTerm(expression: t.name)]))
         .get();
   }
@@ -17,6 +18,7 @@ class FoodDao {
   /// Реактивный стрим всех продуктов
   Stream<List<FoodProduct>> watchAllFoods() {
     return (db.select(db.foodProducts)
+          ..where((t) => t.sourceType.equals('quick_add').not())
           ..orderBy([(t) => OrderingTerm(expression: t.name)]))
         .watch();
   }
@@ -24,7 +26,7 @@ class FoodDao {
   /// Поиск продуктов по имени или категории с поддержкой кириллицы
   Future<List<FoodProduct>> searchFoods(String query, {String? category}) async {
     final clean = query.trim().toLowerCase();
-    var q = db.select(db.foodProducts);
+    var q = db.select(db.foodProducts)..where((t) => t.sourceType.equals('quick_add').not());
 
     if (category != null && category.isNotEmpty) {
       q = q..where((t) => t.category.equals(category));
