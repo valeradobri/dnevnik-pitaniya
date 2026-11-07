@@ -102,4 +102,115 @@ class DiaryDao {
           ..orderBy([(t) => OrderingTerm(expression: t.entryDate), (t) => OrderingTerm(expression: t.timestamp)]))
         .watch();
   }
+
+  /// Получить записи конкретного приёма пищи за дату
+  Future<List<DiaryEntry>> getMealEntriesForDate(DateTime date, String mealType) async {
+    final (start, end) = _dayRange(date);
+    return (db.select(db.diaryEntries)
+          ..where((t) =>
+              t.entryDate.isBiggerOrEqualValue(start) &
+              t.entryDate.isSmallerOrEqualValue(end) &
+              t.mealType.equals(mealType))
+          ..orderBy([(t) => OrderingTerm(expression: t.timestamp)]))
+        .get();
+  }
+
+  /// Скопировать список записей в целевую дату и приём пищи
+  Future<int> copyEntries({
+    required List<DiaryEntry> entries,
+    required DateTime targetDate,
+    required String targetMealType,
+  }) async {
+    if (entries.isEmpty) return 0;
+    final now = DateTime.now();
+    final companions = entries.map((e) {
+      return DiaryEntriesCompanion.insert(
+        mealType: targetMealType,
+        foodProductId: e.foodProductId,
+        customName: e.customName,
+        grams: e.grams,
+        calculatedCalories: e.calculatedCalories,
+        calculatedProtein: e.calculatedProtein,
+        calculatedFat: e.calculatedFat,
+        calculatedCarbs: e.calculatedCarbs,
+        entryDate: targetDate,
+        notes: Value(e.notes),
+        timestamp: Value(now),
+      );
+    }).toList();
+
+    await db.batch((b) {
+      b.insertAll(db.diaryEntries, companions);
+    });
+
+    return companions.length;
+  }
+
+  /// Скопировать приём пищи из одной даты/приёма в другую
+  Future<int> copyMeal({
+    required DateTime sourceDate,
+    required String sourceMealType,
+    required DateTime targetDate,
+    required String targetMealType,
+  }) async {
+    final entries = await getMealEntriesForDate(sourceDate, sourceMealType);
+    return copyEntries(
+      entries: entries,
+      targetDate: targetDate,
+      targetMealType: targetMealType,
+    );
+  }
+
+  /// Скопировать весь день целиком из sourceDate в targetDate
+  Future<int> copyDay({
+    required DateTime sourceDate,
+    required DateTime targetDate,
+  }) async {
+    final entries = await getEntriesForDate(sourceDate);
+    if (entries.isEmpty) return 0;
+
+    final now = DateTime.now();
+    final companions = entries.map((e) {
+      return DiaryEntriesCompanion.insert(
+        mealType: e.mealType,
+        foodProductId: e.foodProductId,
+        customName: e.customName,
+        grams: e.grams,
+        calculatedCalories: e.calculatedCalories,
+        calculatedProtein: e.calculatedProtein,
+        calculatedFat: e.calculatedFat,
+        calculatedCarbs: e.calculatedCarbs,
+        entryDate: targetDate,
+        notes: Value(e.notes),
+        timestamp: Value(now),
+      );
+    }).toList();
+
+    await db.batch((b) {
+      b.insertAll(db.diaryEntries, companions);
+    });
+
+    return companions.length;
+  }
+
+  /// Очистить приём пищи за дату
+  Future<int> clearMealForDate(DateTime date, String mealType) async {
+    final (start, end) = _dayRange(date);
+    return (db.delete(db.diaryEntries)
+          ..where((t) =>
+              t.entryDate.isBiggerOrEqualValue(start) &
+              t.entryDate.isSmallerOrEqualValue(end) &
+              t.mealType.equals(mealType)))
+        .go();
+  }
+
+  /// Очистить весь день за дату
+  Future<int> clearDayForDate(DateTime date) async {
+    final (start, end) = _dayRange(date);
+    return (db.delete(db.diaryEntries)
+          ..where((t) =>
+              t.entryDate.isBiggerOrEqualValue(start) &
+              t.entryDate.isSmallerOrEqualValue(end)))
+        .go();
+  }
 }

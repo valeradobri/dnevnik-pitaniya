@@ -7,6 +7,8 @@ import '../../../../core/widgets/nutri_card.dart';
 import '../../../dashboard/presentation/providers/dashboard_providers.dart';
 import '../../../food_database/presentation/widgets/food_search_sheet.dart';
 import '../../../nutrition_suggestions/presentation/widgets/meal_suggestions_sheet.dart';
+import '../widgets/copy_day_dialog.dart';
+import '../widgets/copy_meal_dialog.dart';
 
 class DiaryScreen extends ConsumerStatefulWidget {
   const DiaryScreen({super.key});
@@ -105,6 +107,140 @@ class _DiaryScreenState extends ConsumerState<DiaryScreen> {
                 setState(() => _selectedDate = picked);
               }
             },
+          ),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert_rounded),
+            tooltip: 'Действия со днем',
+            onSelected: (value) async {
+              final diaryDao = ref.read(diaryDaoProvider);
+              switch (value) {
+                case 'copy_tomorrow':
+                  final tomorrow = _selectedDate.add(const Duration(days: 1));
+                  final count = await diaryDao.copyDay(
+                    sourceDate: _selectedDate,
+                    targetDate: tomorrow,
+                  );
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('День скопирован на завтра ($count блюд)'),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
+                  break;
+                case 'copy_dialog':
+                  CopyDayDialog.show(
+                    context,
+                    sourceDate: _selectedDate,
+                    entriesCount: entries.length,
+                    totalCalories: totals.calories,
+                  );
+                  break;
+                case 'repeat_yesterday':
+                  final yesterday = _selectedDate.subtract(const Duration(days: 1));
+                  final count = await diaryDao.copyDay(
+                    sourceDate: yesterday,
+                    targetDate: _selectedDate,
+                  );
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: count > 0
+                            ? Text('Вчерашний день повторен ($count блюд)')
+                            : const Text('За вчерашний день нет записей'),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
+                  break;
+                case 'clear_day':
+                  final confirmed = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: const Text('Очистить весь день?'),
+                      content: Text(
+                        'Все записи за ${_formatDateTitle(_selectedDate)} будут удалены.',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(ctx).pop(false),
+                          child: const Text('Отмена'),
+                        ),
+                        FilledButton(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: theme.colorScheme.error,
+                          ),
+                          onPressed: () => Navigator.of(ctx).pop(true),
+                          child: const Text('Удалить всё'),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (confirmed == true) {
+                    await diaryDao.clearDayForDate(_selectedDate);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Весь день очищен'),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    }
+                  }
+                  break;
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'copy_tomorrow',
+                enabled: entries.isNotEmpty,
+                child: const Row(
+                  children: [
+                    Icon(Icons.arrow_forward_rounded, size: 20),
+                    SizedBox(width: 12),
+                    Text('Скопировать на завтра'),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'copy_dialog',
+                enabled: entries.isNotEmpty,
+                child: const Row(
+                  children: [
+                    Icon(Icons.copy_rounded, size: 20),
+                    SizedBox(width: 12),
+                    Text('Скопировать в дату...'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'repeat_yesterday',
+                child: Row(
+                  children: [
+                    Icon(Icons.history_rounded, size: 20),
+                    SizedBox(width: 12),
+                    Text('Повторить вчерашний день'),
+                  ],
+                ),
+              ),
+              if (entries.isNotEmpty) ...[
+                const PopupMenuDivider(),
+                PopupMenuItem(
+                  value: 'clear_day',
+                  child: Row(
+                    children: [
+                      Icon(Icons.delete_sweep_rounded, size: 20, color: theme.colorScheme.error),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Очистить день',
+                        style: TextStyle(color: theme.colorScheme.error),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
           ),
         ],
       ),
@@ -327,6 +463,12 @@ class _DiaryMealSection extends ConsumerWidget {
     final totalCalories = entries.fold<double>(0, (sum, e) => sum + e.calculatedCalories);
     final diaryDao = ref.read(diaryDaoProvider);
 
+    final yesterday = date.subtract(const Duration(days: 1));
+    final yesterdayEntriesAsync = ref.watch(dateDiaryEntriesProvider(yesterday));
+    final yesterdayEntries = (yesterdayEntriesAsync.value ?? [])
+        .where((e) => e.mealType == mealType)
+        .toList();
+
     return NutriCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -371,6 +513,142 @@ class _DiaryMealSection extends ConsumerWidget {
                   visualDensity: VisualDensity.compact,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
+              ),
+              const SizedBox(width: 4),
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert_rounded, size: 20),
+                tooltip: 'Действия с приёмом',
+                padding: EdgeInsets.zero,
+                onSelected: (val) async {
+                  switch (val) {
+                    case 'copy_tomorrow':
+                      final tomorrow = date.add(const Duration(days: 1));
+                      final count = await diaryDao.copyMeal(
+                        sourceDate: date,
+                        sourceMealType: mealType,
+                        targetDate: tomorrow,
+                        targetMealType: mealType,
+                      );
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('$title скопирован на завтра ($count прод.)'),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      }
+                      break;
+                    case 'copy_dialog':
+                      CopyMealDialog.show(
+                        context,
+                        sourceDate: date,
+                        sourceMealType: mealType,
+                        entries: entries,
+                      );
+                      break;
+                    case 'repeat_yesterday':
+                      final count = await diaryDao.copyMeal(
+                        sourceDate: yesterday,
+                        sourceMealType: mealType,
+                        targetDate: date,
+                        targetMealType: mealType,
+                      );
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: count > 0
+                                ? Text('Вчерашний $title повторен ($count прод.)')
+                                : Text('За вчерашний $title нет записей'),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      }
+                      break;
+                    case 'clear_meal':
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          title: Text('Очистить $title?'),
+                          content: Text('Все блюда из приёма "$title" будут удалены.'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(ctx).pop(false),
+                              child: const Text('Отмена'),
+                            ),
+                            FilledButton(
+                              style: FilledButton.styleFrom(
+                                backgroundColor: theme.colorScheme.error,
+                              ),
+                              onPressed: () => Navigator.of(ctx).pop(true),
+                              child: const Text('Очистить'),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirmed == true) {
+                        await diaryDao.clearMealForDate(date, mealType);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Приём "$title" очищен'),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        }
+                      }
+                      break;
+                  }
+                },
+                itemBuilder: (ctx) => [
+                  if (entries.isNotEmpty) ...[
+                    const PopupMenuItem(
+                      value: 'copy_tomorrow',
+                      child: Row(
+                        children: [
+                          Icon(Icons.arrow_forward_rounded, size: 20),
+                          SizedBox(width: 12),
+                          Text('Скопировать на завтра'),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'copy_dialog',
+                      child: Row(
+                        children: [
+                          Icon(Icons.copy_rounded, size: 20),
+                          SizedBox(width: 12),
+                          Text('Скопировать в дату...'),
+                        ],
+                      ),
+                    ),
+                  ],
+                  const PopupMenuItem(
+                    value: 'repeat_yesterday',
+                    child: Row(
+                      children: [
+                        Icon(Icons.history_rounded, size: 20),
+                        SizedBox(width: 12),
+                        Text('Повторить из вчера'),
+                      ],
+                    ),
+                  ),
+                  if (entries.isNotEmpty) ...[
+                    const PopupMenuDivider(),
+                    PopupMenuItem(
+                      value: 'clear_meal',
+                      child: Row(
+                        children: [
+                          Icon(Icons.delete_outline_rounded, size: 20, color: theme.colorScheme.error),
+                          SizedBox(width: 12),
+                          Text(
+                            'Очистить приём',
+                            style: TextStyle(color: theme.colorScheme.error),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ],
           ),
@@ -463,18 +741,78 @@ class _DiaryMealSection extends ConsumerWidget {
               },
             ),
           ] else ...[
-            const SizedBox(height: 10),
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Text(
-                  'Ничего не добавлено',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+            if (yesterdayEntries.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              InkWell(
+                onTap: () async {
+                  final count = await diaryDao.copyEntries(
+                    entries: yesterdayEntries,
+                    targetDate: date,
+                    targetMealType: mealType,
+                  );
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Вчерашний $title ($count прод.) добавлен!'),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
+                },
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: color.withValues(alpha: 0.25),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.history_rounded, size: 18, color: color),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Повторить вчерашний $title',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: theme.colorScheme.onSurface,
+                              ),
+                            ),
+                            Text(
+                              '${yesterdayEntries.length} прод. · ${yesterdayEntries.fold<double>(0, (s, e) => s + e.calculatedCalories).round()} ккал',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(Icons.add_circle_outline_rounded, size: 20, color: color),
+                    ],
                   ),
                 ),
               ),
-            ),
+            ] else ...[
+              const SizedBox(height: 10),
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Text(
+                    'Ничего не добавлено',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ],
         ],
       ),
