@@ -13,9 +13,13 @@
   - Однокликовая запись в дневник питания в одну аккуратную строку с детализацией состава в поле `notes`.
   - Категория **«🍔 Мои комбо»** в каталоге продуктов для быстрого доступа к сохранённым шаблонам.
   - Модальное окно [SavedComboSheet](file:///d:/go-projects/Dnevnik/lib/features/food_database/presentation/widgets/saved_combo_sheet.dart) с быстрым масштабированием порций (`0.5x`, `1x`, `1.5x`, `2x`, `3x`), добавлением в выбранный приём пищи в один клик и удалением шаблонов.
+- **Расширенное сканирование штрихкодов и офлайн-база брендов**:
+  - Внедрен 3-этапный каскадный опрос Open Food Facts: `ru.openfoodfacts.org` (v2) ➔ `world.openfoodfacts.org` (v2) ➔ `world.openfoodfacts.org` (v0).
+  - Улучшен парсинг нутриентов: расчёт калорий из кДж, поддержка `energy-kcal_value`, фолбэк по формуле Этуотера и автоопределение категорий продуктов.
+  - Добавлена встроенная офлайн-база **310 популярных брендовых продуктов со штрихкодами** ([branded_barcodes_seed.dart](file:///d:/go-projects/Dnevnik/lib/core/database/seed/branded_barcodes_seed.dart)): молочка («Простоквашино», «Савушкин», «Брест-Литовск», «Epica», «Danone»), крупы и макароны («Макфа», «Barilla», «Мистраль», «Увелка»), мясо и птица («Петелинка», «Мираторг», «Вязанка», «Индилайт»), хлеб («Коломенское», «Хлебный дом»), напитки («Святой Источник», «Боржоми», «Черноголовка») и полезные перекусы («Bombbar», «Alpen Gold», «Snickers»).
 - **Тесты и качество кода**:
-  - Добавлены модульные тесты [combo_item_test.dart](file:///d:/go-projects/Dnevnik/test/unit/combo_item_test.dart) и виджет-тесты [combo_flow_test.dart](file:///d:/go-projects/Dnevnik/test/widget/combo_flow_test.dart).
-  - Общее количество автоматических тестов увеличено до **74 тестов (100% passed)**.
+  - Добавлены модульные тесты [combo_item_test.dart](file:///d:/go-projects/Dnevnik/test/unit/combo_item_test.dart), [open_food_facts_client_test.dart](file:///d:/go-projects/Dnevnik/test/unit/open_food_facts_client_test.dart) и виджет-тесты [combo_flow_test.dart](file:///d:/go-projects/Dnevnik/test/widget/combo_flow_test.dart).
+  - Общее количество автоматических тестов увеличено до **78 тестов (100% passed)**.
   - Статический анализ `flutter analyze`: **0 ошибок, 0 предупреждений**.
 
 ### Исправлено

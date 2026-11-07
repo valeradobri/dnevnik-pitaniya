@@ -3,6 +3,7 @@ import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'tables/tables.dart';
 import 'seed/food_seed.dart';
+import 'seed/branded_barcodes_seed.dart';
 import 'seed/achievements_seed.dart';
 import 'daos/food_dao.dart';
 import 'daos/diary_dao.dart';
@@ -69,12 +70,41 @@ class AppDatabase extends _$AppDatabase {
   Future<void> seedFoodProducts() async {
     final existing = await select(foodProducts).get();
     final existingNames = existing.map((f) => f.name.toLowerCase()).toSet();
-    final toInsert = initialFoodProducts
+    final existingBarcodes = existing
+        .map((f) => f.barcode?.trim())
+        .where((b) => b != null && b.isNotEmpty)
+        .cast<String>()
+        .toSet();
+
+    // 1. Базовые проверенные продукты
+    final toInsertBase = initialFoodProducts
         .where((f) => !existingNames.contains(f.name.value.toLowerCase()))
         .toList();
-    if (toInsert.isNotEmpty) {
+
+    if (toInsertBase.isNotEmpty) {
       await batch((b) {
-        b.insertAll(foodProducts, toInsert);
+        b.insertAll(foodProducts, toInsertBase);
+      });
+    }
+
+    // 2. Популярные брендовые продукты со штрихкодами
+    final toInsertBranded = initialBrandedProducts
+        .where((f) {
+          final barcode = f.barcode.value;
+          final name = f.name.value.toLowerCase();
+          if (barcode != null && existingBarcodes.contains(barcode)) {
+            return false;
+          }
+          if (existingNames.contains(name)) {
+            return false;
+          }
+          return true;
+        })
+        .toList();
+
+    if (toInsertBranded.isNotEmpty) {
+      await batch((b) {
+        b.insertAll(foodProducts, toInsertBranded);
       });
     }
   }

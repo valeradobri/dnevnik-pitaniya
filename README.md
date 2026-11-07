@@ -4,7 +4,7 @@
 [![Dart](https://img.shields.io/badge/Dart-3.x+-0175C2?logo=dart&logoColor=white)](https://dart.dev)
 [![Architecture](https://img.shields.io/badge/Architecture-Feature--First%20Clean-emerald)](https://riverpod.dev)
 [![Database](https://img.shields.io/badge/Database-Drift%20%2F%20SQLite-003B57?logo=sqlite&logoColor=white)](https://drift.simonbinder.eu)
-[![Tests](https://img.shields.io/badge/Tests-74%20passed%20(100%25)-success)](#)
+[![Tests](https://img.shields.io/badge/Tests-78%20passed%20(100%25)-success)](#)
 [![Code%20Style](https://img.shields.io/badge/Analysis-0%20issues-success)](#)
 [![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS%20%7C%20Web%20%7C%20Windows-blue)](#)
 [![License](https://img.shields.io/badge/License-Proprietary-blue)](#)
